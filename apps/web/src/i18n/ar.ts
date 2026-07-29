@@ -64,6 +64,9 @@ export const ar: Partial<Dictionary> = {
   "settings.appearance.environmentIdentification.title": "تمييز البيئة",
   "settings.appearance.environmentIdentification.description":
     "اختر طريقة تمييز بيئتي Dev و Nightly.",
+  "settings.appearance.environmentIdentification.artwork": "رسم مميّز",
+  "settings.appearance.environmentIdentification.pill": "شريط الإصدار",
+  "settings.appearance.environmentIdentification.none": "بدون",
 
   "chat.scrollToEnd": "الانتقال إلى النهاية",
 };

@@ -73,6 +73,10 @@ function SidebarBrand({ onBackdrop }: { onBackdrop: boolean }) {
   return (
     <Link
       aria-label="Go to threads"
+      // The wordmark and "Code" are separate elements, so an RTL flex row would
+      // reverse them into "Code T3". The product name is a proper noun and
+      // always reads left-to-right.
+      dir="ltr"
       className={cn(
         "sidebar-brand relative z-10 ml-[var(--workspace-titlebar-content-left)] h-7 w-fit min-w-0 shrink-0 items-center gap-1 overflow-hidden rounded-md outline-hidden ring-ring focus-visible:ring-2",
         onBackdrop ? "text-white" : "text-foreground",

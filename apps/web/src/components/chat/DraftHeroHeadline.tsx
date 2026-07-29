@@ -145,7 +145,10 @@ export function DraftHeroHeadline({
   );
 
   return (
-    <h1 className="mx-auto w-full max-w-5xl text-center font-normal text-2xl text-foreground tracking-tight sm:text-3xl">
+    // The headline interleaves UI text with a project name, so its base
+    // direction has to come from the content: an English sentence in an Arabic
+    // interface otherwise has its trailing "?" and the project name reordered.
+    <h1 className="mx-auto w-full max-w-5xl [unicode-bidi:plaintext] text-center font-normal text-2xl text-foreground tracking-tight sm:text-3xl">
       {hasResolvedProject ? (
         <>What should we build in {projectSelector}?</>
       ) : canChooseProject ? (

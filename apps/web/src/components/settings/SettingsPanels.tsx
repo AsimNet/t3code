@@ -160,12 +160,6 @@ const THEME_OPTIONS = [
   },
 ] as const;
 
-const ENVIRONMENT_IDENTIFICATION_LABELS: Record<EnvironmentIdentificationMode, string> = {
-  artwork: "Artwork",
-  pill: "Version pill",
-  none: "None",
-};
-
 const TIMESTAMP_FORMAT_LABELS = {
   locale: "System default",
   "12-hour": "12-hour",
@@ -999,6 +993,11 @@ export function AppearanceSettingsPanel() {
     soft: t("settings.appearance.lightTone.soft"),
     paper: t("settings.appearance.lightTone.paper"),
   };
+  const environmentIdentificationLabels: Record<EnvironmentIdentificationMode, string> = {
+    artwork: t("settings.appearance.environmentIdentification.artwork"),
+    pill: t("settings.appearance.environmentIdentification.pill"),
+    none: t("settings.appearance.environmentIdentification.none"),
+  };
   const languageLabels: Record<AppLanguage, string> = {
     system: t("common.system"),
     en: t("settings.appearance.language.english"),
@@ -1277,11 +1276,11 @@ export function AppearanceSettingsPanel() {
               >
                 <SelectTrigger className="w-full sm:w-40" aria-label="Environment identification">
                   <SelectValue>
-                    {ENVIRONMENT_IDENTIFICATION_LABELS[settings.environmentIdentificationMode]}
+                    {environmentIdentificationLabels[settings.environmentIdentificationMode]}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectPopup align="end" alignItemWithTrigger={false}>
-                  {Object.entries(ENVIRONMENT_IDENTIFICATION_LABELS).map(([value, label]) => (
+                  {Object.entries(environmentIdentificationLabels).map(([value, label]) => (
                     <SelectItem hideIndicator key={value} value={value}>
                       {label}
                     </SelectItem>

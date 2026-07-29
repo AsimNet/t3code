@@ -688,7 +688,7 @@ export function BranchToolbarBranchSelector({
         onContextMenu={(event) => handleBranchContextMenu(event, itemValue)}
       >
         <div className="flex w-full min-w-0 items-center justify-between gap-2">
-          <span className="min-w-0 flex-1 truncate">{itemValue}</span>
+          <span className="force-ltr min-w-0 flex-1 truncate">{itemValue}</span>
           {badge && <span className="shrink-0 text-3xs text-muted-foreground/45">{badge}</span>}
         </div>
       </ComboboxItem>
@@ -763,7 +763,7 @@ export function BranchToolbarBranchSelector({
             />
             <ComboboxInput
               className="[&_input]:h-6.5 [&_input]:ps-5 [&_input]:font-sans [&_input]:leading-6.5"
-              inputClassName="rounded-none bg-transparent text-sm"
+              inputClassName="force-ltr rounded-none bg-transparent text-sm"
               placeholder="Search refs..."
               showTrigger={false}
               size="sm"

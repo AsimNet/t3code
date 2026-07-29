@@ -640,7 +640,7 @@ export default function DiffPanel({
                     />
                     <ComboboxInput
                       className="[&_input]:h-6.5 [&_input]:ps-5 [&_input]:font-sans [&_input]:leading-6.5"
-                      inputClassName="rounded-none bg-transparent text-sm"
+                      inputClassName="force-ltr rounded-none bg-transparent text-sm"
                       placeholder="Search refs..."
                       showTrigger={false}
                       size="sm"

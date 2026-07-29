@@ -62,6 +62,9 @@ export const en = {
   "settings.appearance.environmentIdentification.title": "Environment identification",
   "settings.appearance.environmentIdentification.description":
     "Choose how Dev and Nightly environments are identified.",
+  "settings.appearance.environmentIdentification.artwork": "Artwork",
+  "settings.appearance.environmentIdentification.pill": "Version pill",
+  "settings.appearance.environmentIdentification.none": "None",
 
   "chat.scrollToEnd": "Scroll to end",
 } as const;

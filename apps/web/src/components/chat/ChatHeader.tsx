@@ -87,7 +87,16 @@ export const ChatHeader = memo(function ChatHeader({
     primaryEnvironmentId,
   });
   return (
-    <div className="@container/header-actions flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+    // The reservation for `.workspace-titlebar-controls` sits on the row, not on
+    // the actions: those controls are pinned to the physical right edge (they
+    // share an inset with native window buttons, which do not mirror), and in RTL
+    // it is the title that ends up against that edge, not the actions.
+    <div
+      className={cn(
+        "@container/header-actions flex min-w-0 flex-1 items-center gap-2 sm:gap-3",
+        rightPanelOpen ? "pr-0" : "pr-16",
+      )}
+    >
       <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
         {/* The project always leads the header: knowing which project a
             thread lives in is priority zero, and the thread title alone
@@ -135,10 +144,7 @@ export const ChatHeader = memo(function ChatHeader({
       </div>
       <div
         data-chat-header-actions
-        className={cn(
-          "flex shrink-0 items-center justify-end gap-2 @3xl/header-actions:gap-3",
-          rightPanelOpen ? "pr-0" : "pr-16",
-        )}
+        className="flex shrink-0 items-center justify-end gap-2 @3xl/header-actions:gap-3"
       >
         {activeProjectScripts && (
           <ProjectScriptsControl
