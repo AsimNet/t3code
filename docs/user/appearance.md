@@ -127,3 +127,28 @@ than the motion it would remove.
 
 `prefers-reduced-motion: reduce` from the OS still applies on its own, whatever
 this setting says.
+
+## RTL notes for contributors
+
+Two separate axes, and conflating them is the usual source of bugs:
+
+- **Direction** is layout. Use logical utilities (`ps-`/`pe-`, `ms-`/`me-`,
+  `start-`/`end-`, `border-s`/`border-e`, `text-start`) so it mirrors for free.
+  Things that cannot mirror on their own — gradients, `translate-x`, masks,
+  `env()` safe-area insets — read a direction variable defined in `index.css`
+  instead of being duplicated per side.
+- **Script** is typography, scoped with `:lang(ar)`. Arabic letters join, so
+  letter-spacing is neutralized; it is unicameral, so `uppercase` is a no-op;
+  its diacritics need a looser line-height at small sizes; and underlines get an
+  offset so they miss the dots under ب ج خ.
+
+For truncated text the distinction matters concretely: `unicode-bidi: plaintext`
+fixes _reordering_ but not the ellipsis, because it does not change `direction`.
+Anything user- or agent-authored that can be truncated — thread titles, project
+names — needs `dir="auto"` so the ellipsis lands on the correct end. Identifiers
+that are always Latin (git refs, code) get `force-ltr` instead.
+
+Known caveat: the app styles a lot of text with alpha (`text-muted-foreground/70`).
+Semi-transparent Arabic can show seams where connected letters overlap, since the
+joins get blended twice. Fixing it properly means opaque colors on Arabic text,
+which has not been done.

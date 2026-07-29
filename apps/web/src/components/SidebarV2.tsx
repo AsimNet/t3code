@@ -251,7 +251,10 @@ function SidebarV2ThreadTooltip({
       className="max-w-80 text-start whitespace-normal"
     >
       <div className="flex min-w-0 max-w-80 flex-col gap-2 px-0.5 py-1.5">
-        <div className="min-w-0 truncate text-xs leading-none font-medium text-foreground">
+        <div
+          dir="auto"
+          className="min-w-0 truncate text-xs leading-none font-medium text-foreground"
+        >
           {thread.title}
         </div>
         <div className="grid gap-1.5 ps-0.5 text-xs text-muted-foreground">

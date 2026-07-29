@@ -854,6 +854,45 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   padding-inline-end: var(--safe-area-inset-end);
 }
 
+/* Arabic typography. Scoped to :lang(ar) rather than [dir="rtl"] on purpose:
+   these are properties of the script, not of the layout direction, and the two
+   are not the same thing — an RTL layout still shows Latin strings that want
+   their normal treatment. Each rule outranks the Tailwind utility it corrects
+   (attribute selector, so 0-2-0 against the utility's 0-1-0). */
+
+/* Arabic letters join into words. Any tracking pulls them apart into loose
+   unconnected glyphs; the positive values used for small-label styling
+   (tracking-[0.18em] and friends) are the worst offenders. */
+:lang(ar) [class*="tracking-"] {
+  letter-spacing: normal;
+}
+
+/* Arabic is unicameral: there is no uppercase to transform to, so the utility
+   only ever costs us the letter-spacing above. */
+:lang(ar) [class*="uppercase"] {
+  text-transform: none;
+}
+
+/* A connected word cannot be broken between letters. */
+:lang(ar) [class*="break-all"] {
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+:lang(ar) {
+  /* Default underlines run straight through the dots under ب ج خ. */
+  text-underline-offset: 0.2em;
+}
+
+/* Diacritics sit outside the em box, so the tight ratios Tailwind uses for
+   small UI text clip a kasra or shadda. Only the two tightest steps are
+   loosened; anything with an explicit leading-* keeps its own value, because
+   that sets --tw-leading and wins. */
+html:lang(ar) {
+  --text-xs--line-height: 1.45;
+  --text-sm--line-height: 1.5;
+}
+
 /* Content direction. The chrome follows the locale, but what is *inside* a
    thread is whatever the user and the agent wrote, usually a mix of Arabic and
    English. `plaintext` resolves each block from its own first strong character,

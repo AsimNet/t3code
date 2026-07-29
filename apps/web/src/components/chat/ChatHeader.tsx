@@ -119,7 +119,9 @@ export const ChatHeader = memo(function ChatHeader({
                   cwd={activeProjectCwd ?? ""}
                   className="size-3.5"
                 />
-                <span className="max-w-40 truncate text-sm font-medium">{activeProjectName}</span>
+                <span dir="auto" className="max-w-40 truncate text-sm font-medium">
+                  {activeProjectName}
+                </span>
               </TooltipTrigger>
               <TooltipPopup side="top">New thread in {activeProjectName}</TooltipPopup>
             </Tooltip>
@@ -132,6 +134,7 @@ export const ChatHeader = memo(function ChatHeader({
           <TooltipTrigger
             render={
               <h2
+                dir="auto"
                 aria-label={activeThreadTitle}
                 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground"
               >
