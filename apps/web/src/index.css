@@ -98,7 +98,19 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   --workspace-titlebar-control-gap: 0.75rem;
 }
 
+/* Inline aliases for the workspace control insets. The physical pair above stays
+   for things the OS owns (macOS traffic lights, the Windows control overlay);
+   T3's own chrome — the sidebar toggle, the panel-layout controls — uses these so
+   it travels with the panel it belongs to. Substitution is lazy, so `.wco`
+   redefining the physical vars still flows through. */
+:root {
+  --workspace-controls-inline-start: var(--workspace-controls-left);
+  --workspace-controls-inline-end: var(--workspace-controls-right);
+}
+
 [dir="rtl"] {
+  --workspace-controls-inline-start: var(--workspace-controls-right);
+  --workspace-controls-inline-end: var(--workspace-controls-left);
   --safe-area-inset-start: max(env(safe-area-inset-right), 0px);
   --safe-area-inset-end: max(env(safe-area-inset-left), 0px);
   /* Switch thumbs travel along a physical axis, and Tailwind has no logical
@@ -280,6 +292,16 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
     display: none;
   }
 
+  /* The wordmark is English in every locale, so it stays on the physical left
+     rather than leading the sidebar header. `margin-inline-start: auto` absorbs
+     the free space before it, which pushes it to the inline end — the physical
+     left — and the physical margin that reserved room for the sidebar toggle is
+     dropped, because that toggle moved to the inline start. */
+  [dir="rtl"] .sidebar-brand {
+    margin-inline-start: auto;
+    margin-left: 0;
+  }
+
   .sidebar-brand-stage {
     display: none;
   }
@@ -400,7 +422,9 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   .workspace-titlebar-controls {
     position: absolute;
     top: var(--workspace-controls-top);
-    right: var(--workspace-controls-right);
+    /* These toggle the right-hand panel, so they belong above it — which means
+       following the inline axis, not staying pinned to the physical right. */
+    inset-inline-end: var(--workspace-controls-inline-end);
     display: flex;
     height: var(--workspace-topbar-height);
     align-items: center;

@@ -69,7 +69,7 @@ import {
 import { isElectron } from "../../env";
 import { buildHostedChannelSelectionUrl, type HostedAppChannel } from "../../hostedPairing";
 import { useTheme } from "../../hooks/useTheme";
-import { useT } from "../../i18n";
+import { type Translate, useT } from "../../i18n";
 import { usePrimarySettings, useUpdatePrimarySettings } from "../../hooks/useSettings";
 import { useThreadActions } from "../../hooks/useThreadActions";
 import { useDesktopUpdateState } from "../../state/desktopUpdate";
@@ -160,17 +160,21 @@ const THEME_OPTIONS = [
   },
 ] as const;
 
-const TIMESTAMP_FORMAT_LABELS = {
-  locale: "System default",
-  "12-hour": "12-hour",
-  "24-hour": "24-hour",
-} as const;
+function timestampFormatLabels(t: Translate) {
+  return {
+    locale: t("settings.general.timeFormat.locale"),
+    "12-hour": t("settings.general.timeFormat.12Hour"),
+    "24-hour": t("settings.general.timeFormat.24Hour"),
+  };
+}
 
-const BACKGROUND_ACTIVITY_PROFILE_LABELS: Record<BackgroundActivityProfile, string> = {
-  balanced: "Balanced",
-  performance: "Performance",
-  "battery-saver": "Battery saver",
-};
+function backgroundActivityProfileLabels(t: Translate): Record<BackgroundActivityProfile, string> {
+  return {
+    balanced: t("settings.general.backgroundActivity.balanced"),
+    performance: t("settings.general.backgroundActivity.performance"),
+    "battery-saver": t("settings.general.backgroundActivity.batterySaver"),
+  };
+}
 
 type BackgroundActivityProfileOption = BackgroundActivityProfile | "advanced";
 type BackgroundActivityOverridePatch = Partial<{
@@ -179,36 +183,54 @@ type BackgroundActivityOverridePatch = Partial<{
     | undefined;
 }>;
 
-const BACKGROUND_ACTIVITY_PROFILE_OPTION_LABELS: Record<BackgroundActivityProfileOption, string> = {
-  ...BACKGROUND_ACTIVITY_PROFILE_LABELS,
-  advanced: "Advanced",
-};
+function backgroundActivityProfileOptionLabels(
+  t: Translate,
+): Record<BackgroundActivityProfileOption, string> {
+  return {
+    ...backgroundActivityProfileLabels(t),
+    advanced: t("settings.general.backgroundActivity.advanced"),
+  };
+}
 
-const BACKGROUND_ACTIVITY_PROFILE_DESCRIPTIONS: Record<BackgroundActivityProfile, string> = {
-  balanced:
-    "Pauses background probes when clients are idle, the host is locked, or low power mode is active.",
-  performance: "Allows scoped background probes while any subscribed client remains connected.",
-  "battery-saver": "Also pauses background probes when the host or client is on battery.",
-};
-
-const ADVANCED_BACKGROUND_ACTIVITY_DESCRIPTION =
-  "Uses custom background intervals with the selected shared power policy.";
+function backgroundActivityProfileDescriptions(
+  t: Translate,
+): Record<BackgroundActivityProfile, string> {
+  return {
+    balanced: t("settings.general.backgroundActivity.balanced.description"),
+    performance: t("settings.general.backgroundActivity.performance.description"),
+    "battery-saver": t("settings.general.backgroundActivity.batterySaver.description"),
+  };
+}
 
 const PROVIDER_HEALTH_INTERVAL_STEP_SECONDS = 30;
 const DEFAULT_DRIVER_KIND = ProviderDriverKind.make("codex");
-const BACKGROUND_ACTIVITY_BOOLEAN_OVERRIDES: ReadonlyArray<{
+function backgroundActivityBooleanOverrides(t: Translate): ReadonlyArray<{
   readonly key:
     | "pauseWhenHostLocked"
     | "pauseWhenHostLowPower"
     | "pauseWhenClientLowPower"
     | "pauseWhenOnBattery";
   readonly label: string;
-}> = [
-  { key: "pauseWhenHostLocked", label: "Pause when host is locked" },
-  { key: "pauseWhenHostLowPower", label: "Pause on host low power" },
-  { key: "pauseWhenClientLowPower", label: "Pause on client low power" },
-  { key: "pauseWhenOnBattery", label: "Pause on battery" },
-];
+}> {
+  return [
+    {
+      key: "pauseWhenHostLocked",
+      label: t("settings.general.backgroundActivity.pauseWhenHostLocked"),
+    },
+    {
+      key: "pauseWhenHostLowPower",
+      label: t("settings.general.backgroundActivity.pauseWhenHostLowPower"),
+    },
+    {
+      key: "pauseWhenClientLowPower",
+      label: t("settings.general.backgroundActivity.pauseWhenClientLowPower"),
+    },
+    {
+      key: "pauseWhenOnBattery",
+      label: t("settings.general.backgroundActivity.pauseWhenOnBattery"),
+    },
+  ];
+}
 
 function durationToSeconds(duration: Duration.Duration): number {
   return Math.round(Duration.toMillis(duration) / 1_000);
@@ -270,6 +292,8 @@ function backgroundActivityOverrideSettings(
 }
 
 function PolicyTooltip({ children }: { readonly children: string }) {
+  const t = useT();
+
   return (
     <Tooltip>
       <TooltipTrigger
@@ -277,7 +301,7 @@ function PolicyTooltip({ children }: { readonly children: string }) {
           <button
             type="button"
             className="inline-flex size-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground"
-            aria-label="Background policy details"
+            aria-label={t("settings.general.backgroundActivity.policyDetailsAriaLabel")}
           >
             <InfoIcon className="size-3.5" />
           </button>
@@ -337,15 +361,18 @@ function ProviderLastChecked({ lastCheckedAt }: { lastCheckedAt: string | null }
 }
 
 function AboutVersionTitle() {
+  const t = useT();
+
   return (
     <span className="inline-flex items-center gap-2">
-      <span>Version</span>
+      <span>{t("settings.general.about.version")}</span>
       <code className="text-2xs font-medium text-muted-foreground">{APP_VERSION}</code>
     </span>
   );
 }
 
 function AboutVersionSection() {
+  const t = useT();
   const updateState = useDesktopUpdateState();
   const [isChangingUpdateChannel, setIsChangingUpdateChannel] = useState(false);
 
@@ -371,8 +398,11 @@ function AboutVersionSection() {
           toastManager.add(
             stackedThreadToast({
               type: "error",
-              title: "Could not change update track",
-              description: error instanceof Error ? error.message : "Update track change failed.",
+              title: t("settings.general.about.updateTrack.changeFailed.title"),
+              description:
+                error instanceof Error
+                  ? error.message
+                  : t("settings.general.about.updateTrack.changeFailed.description"),
             }),
           );
         })
@@ -380,7 +410,7 @@ function AboutVersionSection() {
           setIsChangingUpdateChannel(false);
         });
     },
-    [selectedUpdateChannel],
+    [selectedUpdateChannel, t],
   );
 
   const handleButtonClick = useCallback(() => {
@@ -394,8 +424,11 @@ function AboutVersionSection() {
         toastManager.add(
           stackedThreadToast({
             type: "error",
-            title: "Could not download update",
-            description: error instanceof Error ? error.message : "Download failed.",
+            title: t("settings.general.about.downloadFailed.title"),
+            description:
+              error instanceof Error
+                ? error.message
+                : t("settings.general.about.downloadFailed.description"),
           }),
         );
       });
@@ -414,8 +447,11 @@ function AboutVersionSection() {
         toastManager.add(
           stackedThreadToast({
             type: "error",
-            title: "Could not install update",
-            description: error instanceof Error ? error.message : "Install failed.",
+            title: t("settings.general.about.installFailed.title"),
+            description:
+              error instanceof Error
+                ? error.message
+                : t("settings.general.about.installFailed.description"),
           }),
         );
       });
@@ -430,9 +466,9 @@ function AboutVersionSection() {
           toastManager.add(
             stackedThreadToast({
               type: "error",
-              title: "Could not check for updates",
+              title: t("settings.general.about.checkFailed.title"),
               description:
-                result.state.message ?? "Automatic updates are not available in this build.",
+                result.state.message ?? t("settings.general.about.checkFailed.unavailable"),
             }),
           );
         }
@@ -441,12 +477,15 @@ function AboutVersionSection() {
         toastManager.add(
           stackedThreadToast({
             type: "error",
-            title: "Could not check for updates",
-            description: error instanceof Error ? error.message : "Update check failed.",
+            title: t("settings.general.about.checkFailed.title"),
+            description:
+              error instanceof Error
+                ? error.message
+                : t("settings.general.about.checkFailed.description"),
           }),
         );
       });
-  }, [updateState]);
+  }, [t, updateState]);
 
   const action = updateState ? resolveDesktopUpdateButtonAction(updateState) : "none";
   const buttonTooltip = updateState ? getDesktopUpdateButtonTooltip(updateState) : null;
@@ -455,18 +494,23 @@ function AboutVersionSection() {
       ? !canCheckForUpdate(updateState)
       : isDesktopUpdateButtonDisabled(updateState);
 
-  const actionLabel: Record<string, string> = { download: "Download", install: "Install" };
+  const actionLabel: Record<string, string> = {
+    download: t("settings.general.about.download"),
+    install: t("settings.general.about.install"),
+  };
   const statusLabel: Record<string, string> = {
-    checking: "Checking…",
-    downloading: "Downloading…",
-    "up-to-date": "Up to Date",
+    checking: t("settings.general.about.checking"),
+    downloading: t("settings.general.about.downloading"),
+    "up-to-date": t("settings.general.about.upToDate"),
   };
   const buttonLabel =
-    actionLabel[action] ?? statusLabel[updateState?.status ?? ""] ?? "Check for Updates";
+    actionLabel[action] ??
+    statusLabel[updateState?.status ?? ""] ??
+    t("settings.general.about.checkForUpdates");
   const description =
     action === "download" || action === "install"
-      ? "Update available."
-      : "Current version of the application.";
+      ? t("settings.general.about.updateAvailable")
+      : t("settings.general.about.currentVersion");
 
   return (
     <>
@@ -493,8 +537,8 @@ function AboutVersionSection() {
       />
       {hasDesktopBridge ? (
         <SettingsRow
-          title="Update track"
-          description="Stable follows full releases. Nightly follows the nightly desktop channel and can switch back to stable immediately."
+          title={t("settings.general.about.updateTrack.title")}
+          description={t("settings.general.about.updateTrack.desktopDescription")}
           control={
             <Select
               value={selectedUpdateChannel}
@@ -504,7 +548,7 @@ function AboutVersionSection() {
             >
               <SelectTrigger
                 className="w-full sm:w-40"
-                aria-label="Update track"
+                aria-label={t("settings.general.about.updateTrack.title")}
                 disabled={isChangingUpdateChannel}
               >
                 <SelectValue>
@@ -524,8 +568,8 @@ function AboutVersionSection() {
         />
       ) : selectedHostedAppChannel ? (
         <SettingsRow
-          title="Update track"
-          description="Switches the hosted app release channel."
+          title={t("settings.general.about.updateTrack.title")}
+          description={t("settings.general.about.updateTrack.hostedDescription")}
           control={
             <Select
               value={selectedHostedAppChannel}
@@ -536,7 +580,10 @@ function AboutVersionSection() {
                 );
               }}
             >
-              <SelectTrigger className="w-full sm:w-40" aria-label="Update track">
+              <SelectTrigger
+                className="w-full sm:w-40"
+                aria-label={t("settings.general.about.updateTrack.title")}
+              >
                 <SelectValue>{HOSTED_APP_CHANNEL_LABEL}</SelectValue>
               </SelectTrigger>
               <SelectPopup align="end" alignItemWithTrigger={false}>
@@ -556,6 +603,7 @@ function AboutVersionSection() {
 }
 
 export function useSettingsRestore(onRestored?: () => void) {
+  const t = useT();
   const { theme, setTheme } = useTheme();
   const settings = usePrimarySettings();
   const updateSettings = useUpdatePrimarySettings();
@@ -568,65 +616,78 @@ export function useSettingsRestore(onRestored?: () => void) {
 
   const changedSettingLabels = useMemo(
     () => [
-      ...(theme !== "system" ? ["Theme"] : []),
-      ...(settings.language !== DEFAULT_UNIFIED_SETTINGS.language ? ["Language"] : []),
-      ...(settings.lightTone !== DEFAULT_UNIFIED_SETTINGS.lightTone ? ["Light tone"] : []),
-      ...(settings.fontScale !== DEFAULT_UNIFIED_SETTINGS.fontScale ? ["Text size"] : []),
-      ...(settings.chatAutoScroll !== DEFAULT_UNIFIED_SETTINGS.chatAutoScroll
-        ? ["Follow agent output"]
+      ...(theme !== "system" ? [t("settings.appearance.theme.title")] : []),
+      ...(settings.language !== DEFAULT_UNIFIED_SETTINGS.language
+        ? [t("settings.appearance.language.title")]
         : []),
-      ...(settings.reduceMotion !== DEFAULT_UNIFIED_SETTINGS.reduceMotion ? ["Reduce motion"] : []),
-      ...(settings.glassOpacity !== DEFAULT_UNIFIED_SETTINGS.glassOpacity ? ["Glass opacity"] : []),
+      ...(settings.lightTone !== DEFAULT_UNIFIED_SETTINGS.lightTone
+        ? [t("settings.appearance.lightTone.title")]
+        : []),
+      ...(settings.fontScale !== DEFAULT_UNIFIED_SETTINGS.fontScale
+        ? [t("settings.appearance.fontScale.title")]
+        : []),
+      ...(settings.chatAutoScroll !== DEFAULT_UNIFIED_SETTINGS.chatAutoScroll
+        ? [t("settings.appearance.chatAutoScroll.title")]
+        : []),
+      ...(settings.reduceMotion !== DEFAULT_UNIFIED_SETTINGS.reduceMotion
+        ? [t("settings.appearance.reduceMotion.title")]
+        : []),
+      ...(settings.glassOpacity !== DEFAULT_UNIFIED_SETTINGS.glassOpacity
+        ? [t("settings.appearance.glassOpacity.title")]
+        : []),
       ...(settings.environmentIdentificationMode !==
       DEFAULT_UNIFIED_SETTINGS.environmentIdentificationMode
-        ? ["Environment identification"]
+        ? [t("settings.appearance.environmentIdentification.title")]
         : []),
       ...(settings.timestampFormat !== DEFAULT_UNIFIED_SETTINGS.timestampFormat
-        ? ["Time format"]
+        ? [t("settings.general.timeFormat.title")]
         : []),
       ...(settings.sidebarThreadPreviewCount !== DEFAULT_UNIFIED_SETTINGS.sidebarThreadPreviewCount
-        ? ["Visible threads"]
+        ? [t("settings.general.restore.visibleThreads")]
         : []),
       ...(settings.sidebarProjectGroupingMode !==
       DEFAULT_UNIFIED_SETTINGS.sidebarProjectGroupingMode
-        ? ["Project Grouping"]
+        ? [t("settings.general.projectGrouping.title")]
         : []),
-      ...(settings.wordWrap !== DEFAULT_UNIFIED_SETTINGS.wordWrap ? ["Word wrap"] : []),
+      ...(settings.wordWrap !== DEFAULT_UNIFIED_SETTINGS.wordWrap
+        ? [t("settings.appearance.wordWrap.title")]
+        : []),
       ...(settings.diffIgnoreWhitespace !== DEFAULT_UNIFIED_SETTINGS.diffIgnoreWhitespace
-        ? ["Diff whitespace changes"]
+        ? [t("settings.general.restore.diffWhitespace")]
         : []),
       ...(settings.autoOpenPlanSidebar !== DEFAULT_UNIFIED_SETTINGS.autoOpenPlanSidebar
-        ? ["Auto-open task panel"]
+        ? [t("settings.general.autoOpenTaskPanel.title")]
         : []),
       ...(settings.enableAssistantStreaming !== DEFAULT_UNIFIED_SETTINGS.enableAssistantStreaming
-        ? ["Assistant output"]
+        ? [t("settings.general.assistantOutput.title")]
         : []),
       ...(settings.enableProviderUpdateChecks !==
       DEFAULT_UNIFIED_SETTINGS.enableProviderUpdateChecks
-        ? ["Provider update checks"]
+        ? [t("settings.general.providerUpdateChecks.title")]
         : []),
-      ...(isBackgroundActivityDirty ? ["Background activity"] : []),
+      ...(isBackgroundActivityDirty ? [t("settings.general.backgroundActivity.title")] : []),
       ...(settings.defaultThreadEnvMode !== DEFAULT_UNIFIED_SETTINGS.defaultThreadEnvMode
-        ? ["New thread mode"]
+        ? [t("settings.general.restore.newThreadMode")]
         : []),
       ...(settings.newWorktreesStartFromOrigin !==
       DEFAULT_UNIFIED_SETTINGS.newWorktreesStartFromOrigin
-        ? ["New worktrees start from origin"]
+        ? [t("settings.general.restore.worktreesStartFromOrigin")]
         : []),
       ...(settings.addProjectBaseDirectory !== DEFAULT_UNIFIED_SETTINGS.addProjectBaseDirectory
-        ? ["Add project base directory"]
+        ? [t("settings.general.restore.addProjectBaseDirectory")]
         : []),
       ...(settings.confirmThreadArchive !== DEFAULT_UNIFIED_SETTINGS.confirmThreadArchive
-        ? ["Archive confirmation"]
+        ? [t("settings.general.archiveConfirmation.title")]
         : []),
       ...(settings.confirmThreadDelete !== DEFAULT_UNIFIED_SETTINGS.confirmThreadDelete
-        ? ["Delete confirmation"]
+        ? [t("settings.general.deleteConfirmation.title")]
         : []),
-      ...(isTextGenerationModelDirty ? ["Text generation model"] : []),
+      ...(isTextGenerationModelDirty ? [t("settings.general.textGenerationModel.title")] : []),
     ],
     [
       isTextGenerationModelDirty,
       isBackgroundActivityDirty,
+      t,
       settings.autoOpenPlanSidebar,
       settings.chatAutoScroll,
       settings.confirmThreadArchive,
@@ -655,9 +716,12 @@ export function useSettingsRestore(onRestored?: () => void) {
     if (changedSettingLabels.length === 0) return;
     const api = readLocalApi();
     const confirmed = await (api ?? ensureLocalApi()).dialogs.confirm(
-      ["Restore default settings?", `This will reset: ${changedSettingLabels.join(", ")}.`].join(
-        "\n",
-      ),
+      [
+        t("settings.general.restore.confirmTitle"),
+        t("settings.general.restore.confirmBody", {
+          settings: changedSettingLabels.join(t("settings.general.restore.listSeparator")),
+        }),
+      ].join("\n"),
     );
     if (!confirmed) return;
 
@@ -690,7 +754,7 @@ export function useSettingsRestore(onRestored?: () => void) {
       textGenerationModelSelection: DEFAULT_UNIFIED_SETTINGS.textGenerationModelSelection,
     });
     onRestored?.();
-  }, [changedSettingLabels, onRestored, setTheme, updateSettings]);
+  }, [changedSettingLabels, onRestored, setTheme, t, updateSettings]);
 
   return {
     changedSettingLabels,
@@ -705,8 +769,10 @@ function BackgroundActivityAdvancedDialog({
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
 }) {
+  const t = useT();
   const settings = usePrimarySettings();
   const updateSettings = useUpdatePrimarySettings();
+  const profileLabels = backgroundActivityProfileLabels(t);
   const resolvedBackgroundActivity = resolveServerBackgroundActivitySettings(settings);
   const activeProfile = resolvedBackgroundActivity.profile;
   const automaticGitFetchIntervalSeconds = durationToSeconds(
@@ -726,18 +792,20 @@ function BackgroundActivityAdvancedDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPopup className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Background Activity</DialogTitle>
+          <DialogTitle>{t("settings.general.backgroundActivity.dialog.title")}</DialogTitle>
           <DialogDescription>
-            Tune the shared power policy and the background intervals that feed it.
+            {t("settings.general.backgroundActivity.dialog.description")}
           </DialogDescription>
         </DialogHeader>
         <DialogPanel className="space-y-0 px-6 pb-5">
           <div className="overflow-hidden rounded-xl border bg-card text-card-foreground">
             <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0 space-y-1">
-                <div className="text-sm font-medium">Shared policy</div>
+                <div className="text-sm font-medium">
+                  {t("settings.general.backgroundActivity.sharedPolicy.title")}
+                </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  Controls whether background work may run after a subscribed interval fires.
+                  {t("settings.general.backgroundActivity.sharedPolicy.description")}
                 </p>
               </div>
               <Select
@@ -754,18 +822,21 @@ function BackgroundActivityAdvancedDialog({
                   }
                 }}
               >
-                <SelectTrigger className="w-full sm:w-40" aria-label="Shared background policy">
-                  <SelectValue>{BACKGROUND_ACTIVITY_PROFILE_LABELS[activeProfile]}</SelectValue>
+                <SelectTrigger
+                  className="w-full sm:w-40"
+                  aria-label={t("settings.general.backgroundActivity.sharedPolicy.ariaLabel")}
+                >
+                  <SelectValue>{profileLabels[activeProfile]}</SelectValue>
                 </SelectTrigger>
                 <SelectPopup align="end" alignItemWithTrigger={false}>
                   <SelectItem hideIndicator value="balanced">
-                    {BACKGROUND_ACTIVITY_PROFILE_LABELS.balanced}
+                    {profileLabels.balanced}
                   </SelectItem>
                   <SelectItem hideIndicator value="performance">
-                    {BACKGROUND_ACTIVITY_PROFILE_LABELS.performance}
+                    {profileLabels.performance}
                   </SelectItem>
                   <SelectItem hideIndicator value="battery-saver">
-                    {BACKGROUND_ACTIVITY_PROFILE_LABELS["battery-saver"]}
+                    {profileLabels["battery-saver"]}
                   </SelectItem>
                 </SelectPopup>
               </Select>
@@ -773,9 +844,11 @@ function BackgroundActivityAdvancedDialog({
 
             <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0 space-y-1">
-                <div className="text-sm font-medium">Git fetch interval</div>
+                <div className="text-sm font-medium">
+                  {t("settings.general.backgroundActivity.gitFetch.title")}
+                </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  Refresh remote branch status in the background.
+                  {t("settings.general.backgroundActivity.gitFetch.description")}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
@@ -800,20 +873,30 @@ function BackgroundActivityAdvancedDialog({
                   }
                 >
                   <NumberFieldGroup>
-                    <NumberFieldDecrement aria-label="Decrease Git fetch interval" />
-                    <NumberFieldInput aria-label="Git fetch interval in seconds" />
-                    <NumberFieldIncrement aria-label="Increase Git fetch interval" />
+                    <NumberFieldDecrement
+                      aria-label={t("settings.general.backgroundActivity.gitFetch.decrease")}
+                    />
+                    <NumberFieldInput
+                      aria-label={t("settings.general.backgroundActivity.gitFetch.input")}
+                    />
+                    <NumberFieldIncrement
+                      aria-label={t("settings.general.backgroundActivity.gitFetch.increase")}
+                    />
                   </NumberFieldGroup>
                 </NumberField>
-                <span className="text-xs text-muted-foreground">seconds</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("settings.general.backgroundActivity.seconds")}
+                </span>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0 space-y-1">
-                <div className="text-sm font-medium">Provider health interval</div>
+                <div className="text-sm font-medium">
+                  {t("settings.general.backgroundActivity.providerHealth.title")}
+                </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  Refresh provider availability, versions, auth state, and model metadata.
+                  {t("settings.general.backgroundActivity.providerHealth.description")}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
@@ -838,20 +921,30 @@ function BackgroundActivityAdvancedDialog({
                   }
                 >
                   <NumberFieldGroup>
-                    <NumberFieldDecrement aria-label="Decrease provider health interval" />
-                    <NumberFieldInput aria-label="Provider health interval in seconds" />
-                    <NumberFieldIncrement aria-label="Increase provider health interval" />
+                    <NumberFieldDecrement
+                      aria-label={t("settings.general.backgroundActivity.providerHealth.decrease")}
+                    />
+                    <NumberFieldInput
+                      aria-label={t("settings.general.backgroundActivity.providerHealth.input")}
+                    />
+                    <NumberFieldIncrement
+                      aria-label={t("settings.general.backgroundActivity.providerHealth.increase")}
+                    />
                   </NumberFieldGroup>
                 </NumberField>
-                <span className="text-xs text-muted-foreground">seconds</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("settings.general.backgroundActivity.seconds")}
+                </span>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0 space-y-1">
-                <div className="text-sm font-medium">Host power monitor</div>
+                <div className="text-sm font-medium">
+                  {t("settings.general.backgroundActivity.hostPower.title")}
+                </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  Poll host power state while clients are active.
+                  {t("settings.general.backgroundActivity.hostPower.description")}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
@@ -876,20 +969,30 @@ function BackgroundActivityAdvancedDialog({
                   }
                 >
                   <NumberFieldGroup>
-                    <NumberFieldDecrement aria-label="Decrease active host power interval" />
-                    <NumberFieldInput aria-label="Active host power interval in seconds" />
-                    <NumberFieldIncrement aria-label="Increase active host power interval" />
+                    <NumberFieldDecrement
+                      aria-label={t("settings.general.backgroundActivity.hostPower.decrease")}
+                    />
+                    <NumberFieldInput
+                      aria-label={t("settings.general.backgroundActivity.hostPower.input")}
+                    />
+                    <NumberFieldIncrement
+                      aria-label={t("settings.general.backgroundActivity.hostPower.increase")}
+                    />
                   </NumberFieldGroup>
                 </NumberField>
-                <span className="text-xs text-muted-foreground">seconds</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("settings.general.backgroundActivity.seconds")}
+                </span>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0 space-y-1">
-                <div className="text-sm font-medium">Idle host monitor</div>
+                <div className="text-sm font-medium">
+                  {t("settings.general.backgroundActivity.idleHost.title")}
+                </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  Poll host power state when no foreground client is active.
+                  {t("settings.general.backgroundActivity.idleHost.description")}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
@@ -914,17 +1017,25 @@ function BackgroundActivityAdvancedDialog({
                   }
                 >
                   <NumberFieldGroup>
-                    <NumberFieldDecrement aria-label="Decrease idle host power interval" />
-                    <NumberFieldInput aria-label="Idle host power interval in seconds" />
-                    <NumberFieldIncrement aria-label="Increase idle host power interval" />
+                    <NumberFieldDecrement
+                      aria-label={t("settings.general.backgroundActivity.idleHost.decrease")}
+                    />
+                    <NumberFieldInput
+                      aria-label={t("settings.general.backgroundActivity.idleHost.input")}
+                    />
+                    <NumberFieldIncrement
+                      aria-label={t("settings.general.backgroundActivity.idleHost.increase")}
+                    />
                   </NumberFieldGroup>
                 </NumberField>
-                <span className="text-xs text-muted-foreground">seconds</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("settings.general.backgroundActivity.seconds")}
+                </span>
               </div>
             </div>
 
             <div className="grid gap-0 border-t sm:grid-cols-2">
-              {BACKGROUND_ACTIVITY_BOOLEAN_OVERRIDES.map(({ key, label }) => (
+              {backgroundActivityBooleanOverrides(t).map(({ key, label }) => (
                 <label
                   key={key}
                   className="flex items-center justify-between gap-3 border-b px-4 py-3 last:border-b-0 sm:border-e sm:even:border-e-0"
@@ -955,9 +1066,9 @@ function BackgroundActivityAdvancedDialog({
             variant="outline"
             onClick={() => updateSettings(resetBackgroundActivitySettings())}
           >
-            Reset all
+            {t("settings.general.backgroundActivity.resetAll")}
           </Button>
-          <Button onClick={() => onOpenChange(false)}>Done</Button>
+          <Button onClick={() => onOpenChange(false)}>{t("common.done")}</Button>
         </DialogFooter>
       </DialogPopup>
     </Dialog>
@@ -1320,6 +1431,7 @@ export function AppearanceSettingsPanel() {
 }
 
 export function GeneralSettingsPanel() {
+  const t = useT();
   const settings = usePrimarySettings();
   const updateSettings = useUpdatePrimarySettings();
   const [backgroundActivityDialogOpen, setBackgroundActivityDialogOpen] = useState(false);
@@ -1361,12 +1473,14 @@ export function GeneralSettingsPanel() {
   const resolvedBackgroundActivity = resolveServerBackgroundActivitySettings(settings);
   const activeBackgroundActivityProfile = resolvedBackgroundActivity.profile;
   const backgroundActivityProfileOption = resolveBackgroundActivityProfileOption(settings);
+  // The advanced case names the shared policy inside the sentence, so it is one
+  // string with a {policy} placeholder rather than English concatenation.
   const backgroundActivityDescription =
     backgroundActivityProfileOption === "advanced"
-      ? `${ADVANCED_BACKGROUND_ACTIVITY_DESCRIPTION} Current shared policy: ${
-          BACKGROUND_ACTIVITY_PROFILE_LABELS[activeBackgroundActivityProfile]
-        }.`
-      : BACKGROUND_ACTIVITY_PROFILE_DESCRIPTIONS[resolvedBackgroundActivity.profile];
+      ? t("settings.general.backgroundActivity.advanced.description", {
+          policy: backgroundActivityProfileLabels(t)[activeBackgroundActivityProfile],
+        })
+      : backgroundActivityProfileDescriptions(t)[resolvedBackgroundActivity.profile];
   const canResetBackgroundActivity = !Equal.equals(
     settings.backgroundActivity,
     DEFAULT_UNIFIED_SETTINGS.backgroundActivity,
@@ -1436,17 +1550,17 @@ export function GeneralSettingsPanel() {
               }}
             >
               <SelectTrigger className="w-full sm:w-40" aria-label="Timestamp format">
-                <SelectValue>{TIMESTAMP_FORMAT_LABELS[settings.timestampFormat]}</SelectValue>
+                <SelectValue>{timestampFormatLabels(t)[settings.timestampFormat]}</SelectValue>
               </SelectTrigger>
               <SelectPopup align="end" alignItemWithTrigger={false}>
                 <SelectItem hideIndicator value="locale">
-                  {TIMESTAMP_FORMAT_LABELS.locale}
+                  {timestampFormatLabels(t).locale}
                 </SelectItem>
                 <SelectItem hideIndicator value="12-hour">
-                  {TIMESTAMP_FORMAT_LABELS["12-hour"]}
+                  {timestampFormatLabels(t)["12-hour"]}
                 </SelectItem>
                 <SelectItem hideIndicator value="24-hour">
-                  {TIMESTAMP_FORMAT_LABELS["24-hour"]}
+                  {timestampFormatLabels(t)["24-hour"]}
                 </SelectItem>
               </SelectPopup>
             </Select>
@@ -1572,21 +1686,21 @@ export function GeneralSettingsPanel() {
               >
                 <SelectTrigger className="w-full sm:w-40" aria-label="Background activity profile">
                   <SelectValue>
-                    {BACKGROUND_ACTIVITY_PROFILE_OPTION_LABELS[backgroundActivityProfileOption]}
+                    {backgroundActivityProfileOptionLabels(t)[backgroundActivityProfileOption]}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectPopup align="end" alignItemWithTrigger={false}>
                   <SelectItem hideIndicator value="balanced">
-                    {BACKGROUND_ACTIVITY_PROFILE_LABELS.balanced}
+                    {backgroundActivityProfileLabels(t).balanced}
                   </SelectItem>
                   <SelectItem hideIndicator value="performance">
-                    {BACKGROUND_ACTIVITY_PROFILE_LABELS.performance}
+                    {backgroundActivityProfileLabels(t).performance}
                   </SelectItem>
                   <SelectItem hideIndicator value="battery-saver">
-                    {BACKGROUND_ACTIVITY_PROFILE_LABELS["battery-saver"]}
+                    {backgroundActivityProfileLabels(t)["battery-saver"]}
                   </SelectItem>
                   <SelectItem hideIndicator value="advanced">
-                    {BACKGROUND_ACTIVITY_PROFILE_OPTION_LABELS.advanced}
+                    {backgroundActivityProfileOptionLabels(t).advanced}
                   </SelectItem>
                 </SelectPopup>
               </Select>

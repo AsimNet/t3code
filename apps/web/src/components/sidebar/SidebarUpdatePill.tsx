@@ -1,6 +1,7 @@
 import { DownloadIcon, RotateCwIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { isElectron } from "../../env";
+import { useT } from "~/i18n";
 import { useDesktopUpdateState } from "../../state/desktopUpdate";
 import { stackedThreadToast, toastManager } from "../ui/toast";
 import {
@@ -25,6 +26,7 @@ function SidebarUpdateReleaseNotesTooltip({
   readonly state: NonNullable<ReturnType<typeof useDesktopUpdateState>>;
   readonly tooltip: string;
 }) {
+  const t = useT();
   if (state.channel !== "nightly" || state.releaseNotes.length === 0) {
     return <>{tooltip}</>;
   }
@@ -40,7 +42,9 @@ function SidebarUpdateReleaseNotesTooltip({
             {index > 0 && <Separator className="my-3 bg-border/60" />}
             <section>
               <h3 className="text-muted-foreground text-xs leading-4 font-semibold">
-                {index === 0 ? "What's changed" : `Changes in ${releaseNote.version}`}
+                {index === 0
+                  ? t("sidebar.update.whatsChanged")
+                  : t("sidebar.update.changesIn", { version: releaseNote.version })}
               </h3>
               <ul className="mt-2 space-y-1.5 ps-4 text-xs leading-5 text-popover-foreground/90">
                 {releaseNote.items.map((item, itemIndex) => (
@@ -58,11 +62,12 @@ function SidebarUpdateReleaseNotesTooltip({
 }
 
 export function SidebarUpdatePill() {
+  const t = useT();
   const state = useDesktopUpdateState();
   const [dismissed, setDismissed] = useState(false);
 
   const visible = isElectron && shouldShowDesktopUpdateButton(state) && !dismissed;
-  const tooltip = state ? getDesktopUpdateButtonTooltip(state) : "Update available";
+  const tooltip = state ? getDesktopUpdateButtonTooltip(state) : t("sidebar.update.available");
   const disabled = isDesktopUpdateButtonDisabled(state);
   const action = state ? resolveDesktopUpdateButtonAction(state) : "none";
 
@@ -82,8 +87,8 @@ export function SidebarUpdatePill() {
           if (result.completed) {
             toastManager.add({
               type: "success",
-              title: "Update downloaded",
-              description: "Restart the app from the update button to install it.",
+              title: t("sidebar.toast.updateDownloaded"),
+              description: t("sidebar.toast.updateDownloadedDescription"),
             });
           }
           if (!shouldToastDesktopUpdateActionResult(result)) return;
@@ -92,7 +97,7 @@ export function SidebarUpdatePill() {
           toastManager.add(
             stackedThreadToast({
               type: "error",
-              title: "Could not download update",
+              title: t("sidebar.toast.updateDownloadFailed"),
               description: actionError,
             }),
           );
@@ -101,8 +106,8 @@ export function SidebarUpdatePill() {
           toastManager.add(
             stackedThreadToast({
               type: "error",
-              title: "Could not start update download",
-              description: error instanceof Error ? error.message : "An unexpected error occurred.",
+              title: t("sidebar.toast.updateDownloadStartFailed"),
+              description: error instanceof Error ? error.message : t("sidebar.error.unexpected"),
             }),
           );
         });
@@ -123,7 +128,7 @@ export function SidebarUpdatePill() {
           toastManager.add(
             stackedThreadToast({
               type: "error",
-              title: "Could not install update",
+              title: t("sidebar.toast.updateInstallFailed"),
               description: actionError,
             }),
           );
@@ -132,13 +137,13 @@ export function SidebarUpdatePill() {
           toastManager.add(
             stackedThreadToast({
               type: "error",
-              title: "Could not install update",
-              description: error instanceof Error ? error.message : "An unexpected error occurred.",
+              title: t("sidebar.toast.updateInstallFailed"),
+              description: error instanceof Error ? error.message : t("sidebar.error.unexpected"),
             }),
           );
         });
     }
-  }, [action, disabled, state]);
+  }, [action, disabled, state, t]);
 
   if (!visible && !showArm64Warning) return null;
 
@@ -147,7 +152,7 @@ export function SidebarUpdatePill() {
       {showArm64Warning && arm64Description && (
         <Alert variant="warning" className="rounded-2xl border-warning/40 bg-warning/8 text-xs">
           <TriangleAlertIcon />
-          <AlertTitle>Intel build on Apple Silicon</AlertTitle>
+          <AlertTitle>{t("sidebar.update.intelBuildTitle")}</AlertTitle>
           <AlertDescription>{arm64Description}</AlertDescription>
         </Alert>
       )}
@@ -172,13 +177,13 @@ export function SidebarUpdatePill() {
                   {action === "install" ? (
                     <>
                       <RotateCwIcon className="size-3.5" />
-                      <span>Restart to update</span>
+                      <span>{t("sidebar.update.restart")}</span>
                     </>
                   ) : state?.status === "downloading" ? (
                     <>
                       <DownloadIcon className="size-3.5" />
                       <span>
-                        Downloading
+                        {t("sidebar.update.downloading")}
                         {typeof state.downloadPercent === "number"
                           ? ` (${Math.floor(state.downloadPercent)}%)`
                           : "…"}
@@ -187,7 +192,7 @@ export function SidebarUpdatePill() {
                   ) : (
                     <>
                       <DownloadIcon className="size-3.5" />
-                      <span>Update available</span>
+                      <span>{t("sidebar.update.available")}</span>
                     </>
                   )}
                 </button>
@@ -215,7 +220,7 @@ export function SidebarUpdatePill() {
                 render={
                   <button
                     type="button"
-                    aria-label="Dismiss update"
+                    aria-label={t("sidebar.update.dismiss")}
                     className="me-1 inline-flex size-5 items-center justify-center rounded-md text-primary/60 transition-colors hover:text-primary"
                     onClick={() => setDismissed(true)}
                   >
@@ -223,7 +228,7 @@ export function SidebarUpdatePill() {
                   </button>
                 }
               />
-              <TooltipPopup side="top">Dismiss until next launch</TooltipPopup>
+              <TooltipPopup side="top">{t("sidebar.update.dismissUntilLaunch")}</TooltipPopup>
             </Tooltip>
           )}
         </div>

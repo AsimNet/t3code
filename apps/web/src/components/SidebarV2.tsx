@@ -692,6 +692,7 @@ const SidebarV2Row = memo(function SidebarV2Row(props: {
     />
   ) : (
     <span
+      dir="auto"
       className={cn(
         "min-w-0 flex-1 text-sm",
         shouldRecede ? "font-normal" : "font-medium",

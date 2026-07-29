@@ -4,6 +4,7 @@ import { FolderPlusIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
 import { openCommandPalette } from "~/commandPaletteBus";
+import { useT } from "~/i18n";
 import { useNewThreadHandler } from "~/hooks/useHandleNewThread";
 import { useClientSettings } from "~/hooks/useSettings";
 import { selectProjectGroupingSettings } from "~/logicalProject";
@@ -33,6 +34,7 @@ export function DraftHeroHeadline({
   activeProjectRef,
   activeProjectTitle,
 }: DraftHeroHeadlineProps) {
+  const t = useT();
   const projects = useProjects();
   const threads = useThreadShells();
   const { environments } = useEnvironments();
@@ -100,10 +102,12 @@ export function DraftHeroHeadline({
   const projectSelector = shouldShowProjectMenu ? (
     <Menu>
       <MenuTrigger
-        aria-label={hasResolvedProject ? "Change project" : "Choose a project"}
+        aria-label={
+          hasResolvedProject ? t("chat.draft.changeProject") : t("chat.draft.chooseProject")
+        }
         className="pointer-events-auto inline cursor-pointer border-foreground/60 border-b border-dotted text-foreground transition-colors hover:border-foreground/80 focus-visible:rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {activeProjectDisplayName ?? "Choose a project"}
+        {activeProjectDisplayName ?? t("chat.draft.chooseProject")}
       </MenuTrigger>
       <MenuPopup align="center" className="max-h-80 min-w-40! w-max max-w-64 overflow-y-auto">
         <MenuRadioGroup
@@ -130,7 +134,7 @@ export function DraftHeroHeadline({
         <MenuSeparator />
         <MenuItem onClick={openAddProject}>
           <FolderPlusIcon />
-          New project
+          {t("chat.draft.newProject")}
         </MenuItem>
       </MenuPopup>
     </Menu>
@@ -140,21 +144,29 @@ export function DraftHeroHeadline({
       onClick={openAddProject}
       className="pointer-events-auto inline cursor-pointer border-muted-foreground/35 border-b border-dotted text-muted-foreground/60 transition-colors hover:border-muted-foreground/60 hover:text-muted-foreground/80 focus-visible:rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
     >
-      {activeProjectTitle ?? "Add a project"}
+      {activeProjectTitle ?? t("chat.draft.addProject")}
     </button>
   );
+
+  // The project name is a live menu trigger, so the sentence is split on its
+  // `{project}` token instead of interpolated.
+  const [headlineBefore = "", headlineAfter = ""] = t(
+    hasResolvedProject ? "chat.draft.headline.build" : "chat.draft.headline.chooseProject",
+  ).split("{project}");
 
   return (
     // The headline interleaves UI text with a project name, so its base
     // direction has to come from the content: an English sentence in an Arabic
     // interface otherwise has its trailing "?" and the project name reordered.
     <h1 className="mx-auto w-full max-w-5xl [unicode-bidi:plaintext] text-center font-normal text-2xl text-foreground tracking-tight sm:text-3xl">
-      {hasResolvedProject ? (
-        <>What should we build in {projectSelector}?</>
-      ) : canChooseProject ? (
-        <>{projectSelector} to start</>
+      {hasResolvedProject || canChooseProject ? (
+        <>
+          {headlineBefore}
+          {projectSelector}
+          {headlineAfter}
+        </>
       ) : (
-        <>Add a project to start</>
+        <>{t("chat.draft.headline.addProject")}</>
       )}
     </h1>
   );

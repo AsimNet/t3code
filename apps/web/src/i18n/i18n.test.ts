@@ -1,18 +1,20 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { ar } from "./ar";
-import { en } from "./en";
-import { translate } from "./index";
+import { STRINGS, translate, type TranslationKey } from "./index";
+
+const entries = Object.entries(STRINGS) as ReadonlyArray<
+  [TranslationKey, { readonly en: string; readonly ar?: string }]
+>;
 
 describe("translate", () => {
-  it("returns the Arabic string when the locale has one", () => {
+  it("returns the Arabic string when the key has one", () => {
     expect(translate("ar", "settings.appearance.language.title")).toBe("اللغة");
   });
 
   it("falls back to English for keys a locale has not translated yet", () => {
-    const untranslated = (Object.keys(en) as Array<keyof typeof en>).find((key) => !(key in ar));
+    const untranslated = entries.find(([, entry]) => entry.ar === undefined);
     if (!untranslated) return;
-    expect(translate("ar", untranslated)).toBe(en[untranslated]);
+    expect(translate("ar", untranslated[0])).toBe(untranslated[1].en);
   });
 
   it("interpolates named placeholders", () => {
@@ -27,16 +29,27 @@ describe("translate", () => {
 });
 
 describe("dictionaries", () => {
-  it("only translates keys that exist in the English source", () => {
-    const sourceKeys = new Set(Object.keys(en));
-    const strays = Object.keys(ar).filter((key) => !sourceKeys.has(key));
-    expect(strays).toEqual([]);
-  });
-
-  it("has no empty translations", () => {
-    const empty = Object.entries(ar)
-      .filter(([, value]) => value !== undefined && value.trim() === "")
+  it("has no empty strings", () => {
+    const empty = entries
+      .filter(([, entry]) => entry.en.trim() === "" || entry.ar?.trim() === "")
       .map(([key]) => key);
     expect(empty).toEqual([]);
+  });
+
+  // A translation may legitimately use FEWER placeholders than the source: the
+  // Arabic singular reads better as "نموذج واحد متاح" than with the digit forced
+  // in. What is always a bug is a placeholder the source does not define, since
+  // nothing substitutes it and the braces render literally.
+  it("never introduces a placeholder the English source does not define", () => {
+    const placeholdersOf = (value: string) => new Set(value.match(/\{(\w+)\}/g) ?? []);
+    const unknown = entries
+      .filter(([, entry]) => entry.ar !== undefined)
+      .flatMap(([key, entry]) => {
+        const defined = placeholdersOf(entry.en);
+        return [...placeholdersOf(entry.ar as string)]
+          .filter((placeholder) => !defined.has(placeholder))
+          .map((placeholder) => `${key}: ${placeholder}`);
+      });
+    expect(unknown).toEqual([]);
   });
 });

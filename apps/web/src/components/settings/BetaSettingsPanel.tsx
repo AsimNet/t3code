@@ -5,6 +5,7 @@ import {
   useSidebarV2Enabled,
   useUpdateClientSettings,
 } from "../../hooks/useSettings";
+import { useT } from "../../i18n";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 import { SettingsPageContainer, SettingsRow, SettingsSection } from "./settingsLayout";
@@ -20,6 +21,7 @@ function AutoSettleDaysInput({
   value: number;
   onCommit: (days: number) => void;
 }) {
+  const t = useT();
   // Local draft so the field can be emptied mid-edit; the setting only moves
   // on valid input and snaps back to the persisted value on blur.
   const [draft, setDraft] = useState(String(value));
@@ -49,12 +51,13 @@ function AutoSettleDaysInput({
         }
       }}
       onBlur={() => setDraft(String(value))}
-      aria-label="Days of inactivity before auto-settle"
+      aria-label={t("settings.beta.autoSettleDays.title")}
     />
   );
 }
 
 export function BetaSettingsPanel() {
+  const t = useT();
   const sidebarV2Enabled = useSidebarV2Enabled();
   const sidebarAutoSettleAfterDays = useClientSettings(
     (settings) => settings.sidebarAutoSettleAfterDays,
@@ -63,10 +66,10 @@ export function BetaSettingsPanel() {
 
   return (
     <SettingsPageContainer>
-      <SettingsSection title="Beta features">
+      <SettingsSection title={t("settings.beta.section")}>
         <SettingsRow
-          title="Sidebar v2"
-          description="One flat thread list in creation order. Active work renders as rich cards; settled threads collapse to compact rows. Settling requires an up-to-date server — on older servers threads simply stay active. Switch back any time."
+          title={t("settings.beta.sidebarV2.title")}
+          description={t("settings.beta.sidebarV2.description")}
           control={
             <Switch
               checked={sidebarV2Enabled}
@@ -78,15 +81,15 @@ export function BetaSettingsPanel() {
                   sidebarV2ConfiguredByUser: true,
                 })
               }
-              aria-label="Enable the sidebar v2 beta"
+              aria-label={t("settings.beta.sidebarV2.ariaLabel")}
             />
           }
         />
         {sidebarV2Enabled ? (
           <>
             <SettingsRow
-              title="Auto-settle inactive threads"
-              description="Threads with no activity for this long settle automatically. Threads on merged or closed PRs always settle."
+              title={t("settings.beta.autoSettle.title")}
+              description={t("settings.beta.autoSettle.description")}
               control={
                 <Switch
                   checked={sidebarAutoSettleAfterDays !== null}
@@ -95,14 +98,14 @@ export function BetaSettingsPanel() {
                       sidebarAutoSettleAfterDays: checked ? AUTO_SETTLE_DEFAULT_DAYS : null,
                     })
                   }
-                  aria-label="Auto-settle inactive threads"
+                  aria-label={t("settings.beta.autoSettle.title")}
                 />
               }
             />
             {sidebarAutoSettleAfterDays !== null ? (
               <SettingsRow
-                title="Days of inactivity before auto-settle"
-                description="Any new activity un-settles a thread automatically."
+                title={t("settings.beta.autoSettleDays.title")}
+                description={t("settings.beta.autoSettleDays.description")}
                 control={
                   <AutoSettleDaysInput
                     value={sidebarAutoSettleAfterDays}

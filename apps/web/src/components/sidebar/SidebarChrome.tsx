@@ -3,6 +3,7 @@ import { memo, useCallback } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 
 import { useEnvironmentIdentificationMode } from "../../hooks/useSettings";
+import { useT } from "~/i18n";
 import { cn } from "../../lib/utils";
 import {
   resolveEnvironmentIdentificationPillLabel,
@@ -70,9 +71,10 @@ export const SidebarChromeHeader = memo(function SidebarChromeHeader({
 });
 
 function SidebarBrand({ onBackdrop }: { onBackdrop: boolean }) {
+  const t = useT();
   return (
     <Link
-      aria-label="Go to threads"
+      aria-label={t("sidebar.goToThreads")}
       // The wordmark and "Code" are separate elements, so an RTL flex row would
       // reverse them into "Code T3". The product name is a proper noun and
       // always reads left-to-right.
@@ -113,6 +115,7 @@ function T3Wordmark() {
 }
 
 export const SidebarChromeFooter = memo(function SidebarChromeFooter() {
+  const t = useT();
   const navigate = useNavigate();
   const { isMobile, setOpenMobile } = useSidebar();
   const handleSettingsClick = useCallback(() => {
@@ -130,7 +133,7 @@ export const SidebarChromeFooter = memo(function SidebarChromeFooter() {
         <SidebarMenuItem>
           <SidebarMenuButton onClick={handleSettingsClick}>
             <SettingsIcon />
-            <span>Settings</span>
+            <span>{t("sidebar.settings")}</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>

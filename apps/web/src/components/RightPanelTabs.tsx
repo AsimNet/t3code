@@ -12,6 +12,7 @@ import {
 } from "react";
 
 import { isElectron } from "~/env";
+import { useT, type Translate } from "~/i18n";
 import type { RightPanelSurface } from "~/rightPanelStore";
 import { cn } from "~/lib/utils";
 import { readLocalApi } from "~/localApi";
@@ -50,10 +51,10 @@ interface RightPanelTabsProps {
   children: ReactNode;
 }
 
-const SURFACE_DISABLED_REASONS = {
-  browser: "Browser previews are only available in the T3 Code desktop app.",
-  files: "Files are only available when a project is open.",
-  diff: "Diff is only available for server threads in Git repositories.",
+const SURFACE_DISABLED_REASON_KEYS = {
+  browser: "panel.surface.unavailable.browser",
+  files: "panel.surface.unavailable.files",
+  diff: "panel.surface.unavailable.diff",
 } as const;
 
 type TabContextMenuAction = "copy-path" | "close" | "close-others" | "close-to-right" | "close-all";
@@ -95,37 +96,38 @@ function RightPanelEmptyState(props: {
   diffAvailable: boolean;
   filesAvailable: boolean;
 }) {
+  const t = useT();
   const actions = [
     {
-      label: "Browser",
-      description: "Open a local app or URL.",
+      label: t("panel.surface.browser"),
+      description: t("panel.surface.browser.description"),
       icon: Globe2,
       available: props.browserAvailable,
-      disabledReason: SURFACE_DISABLED_REASONS.browser,
+      disabledReason: t(SURFACE_DISABLED_REASON_KEYS.browser),
       onClick: props.onAddBrowser,
     },
     {
-      label: "Terminal",
-      description: "Start a shell in this workspace.",
+      label: t("panel.surface.terminal"),
+      description: t("panel.surface.terminal.description"),
       icon: TerminalSquare,
       available: true,
       disabledReason: null,
       onClick: props.onAddTerminal,
     },
     {
-      label: "Files",
-      description: "Browse and read workspace files.",
+      label: t("panel.surface.files"),
+      description: t("panel.surface.files.description"),
       icon: Files,
       available: props.filesAvailable,
-      disabledReason: SURFACE_DISABLED_REASONS.files,
+      disabledReason: t(SURFACE_DISABLED_REASON_KEYS.files),
       onClick: props.onAddFiles,
     },
     {
-      label: "Diff",
-      description: "Review changes in this thread.",
+      label: t("panel.surface.diff"),
+      description: t("panel.surface.diff.description"),
       icon: FileDiff,
       available: props.diffAvailable,
-      disabledReason: SURFACE_DISABLED_REASONS.diff,
+      disabledReason: t(SURFACE_DISABLED_REASON_KEYS.diff),
       onClick: props.onAddDiff,
     },
   ] as const;
@@ -134,10 +136,8 @@ function RightPanelEmptyState(props: {
     <div className="flex min-h-0 flex-1 items-center justify-center p-6">
       <div className="w-full max-w-xl">
         <div className="mb-5 text-center">
-          <h3 className="text-sm font-medium text-foreground">Open a surface</h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Choose what to show in the right panel.
-          </p>
+          <h3 className="text-sm font-medium text-foreground">{t("panel.tabs.emptyTitle")}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{t("panel.tabs.emptyDescription")}</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
           {actions.map((action) => {
@@ -190,12 +190,13 @@ function surfaceTitle(
   surface: RightPanelSurface,
   sessions: Readonly<Record<string, PreviewSessionSnapshot>>,
   terminalLabelsById: ReadonlyMap<string, string>,
+  t: Translate,
 ): string {
   switch (surface.kind) {
     case "diff":
-      return "Diff";
+      return t("panel.surface.diff");
     case "files":
-      return "Files";
+      return t("panel.surface.files");
     case "file":
       return surface.relativePath.slice(surface.relativePath.lastIndexOf("/") + 1);
     case "terminal":
@@ -204,15 +205,15 @@ function surfaceTitle(
         getTerminalLabel(surface.activeTerminalId)
       );
     case "plan":
-      return "Plan";
+      return t("panel.surface.plan");
     case "preview": {
       const snapshot = surface.resourceId ? sessions[surface.resourceId] : null;
-      if (!snapshot || snapshot.navStatus._tag === "Idle") return "Browser";
+      if (!snapshot || snapshot.navStatus._tag === "Idle") return t("panel.surface.browser");
       if (snapshot.navStatus.title.trim().length > 0) return snapshot.navStatus.title;
       try {
-        return new URL(snapshot.navStatus.url).host || "Browser";
+        return new URL(snapshot.navStatus.url).host || t("panel.surface.browser");
       } catch {
-        return "Browser";
+        return t("panel.surface.browser");
       }
     }
   }
@@ -270,6 +271,7 @@ function SurfaceIcon({
 }
 
 export function RightPanelTabs(props: RightPanelTabsProps) {
+  const t = useT();
   const ownsDesktopTitleBar = isElectron && props.mode === "inline";
   const { resolvedTheme } = useTheme();
   const tabListRef = useRef<HTMLDivElement>(null);
@@ -287,23 +289,23 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
 
       const items: ContextMenuItem<TabContextMenuAction>[] = [];
       if (surface.kind === "file") {
-        items.push({ id: "copy-path", label: "Copy path" });
+        items.push({ id: "copy-path", label: t("panel.tabs.copyPath") });
       }
       items.push(
-        { id: "close", label: "Close" },
+        { id: "close", label: t("panel.tabs.close") },
         {
           id: "close-others",
-          label: "Close others",
+          label: t("panel.tabs.closeOthers"),
           disabled: props.surfaces.length <= 1,
         },
         {
           id: "close-to-right",
-          label: "Close to the right",
+          label: t("panel.tabs.closeToRight"),
           disabled: surfaceIndex >= props.surfaces.length - 1,
         },
         {
           id: "close-all",
-          label: "Close all",
+          label: t("panel.tabs.closeAll"),
           disabled: props.surfaces.length === 0,
         },
       );
@@ -329,7 +331,7 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
           break;
       }
     },
-    [props],
+    [props, t],
   );
   const handleTabMouseDown = useCallback((event: ReactMouseEvent) => {
     if (event.button !== 1) return;
@@ -357,13 +359,14 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
     >
       <div
         className={cn(
-          // Physical on purpose, as a set: `pr-28` reserves the strip that
-          // `.workspace-titlebar-controls` occupies, and that bar stays anchored
-          // to the physical right in RTL so it never lands on top of the native
-          // window buttons (which do not mirror with the app's direction).
-          "workspace-topbar gap-1 pl-2",
+          // `pe-28` reserves the strip `.workspace-titlebar-controls` occupies.
+          // Both follow the inline axis, so the tab bar and those controls stay
+          // on the same side as the panel they belong to. The `wco:` variant
+          // below stays physical: it clears the Windows control overlay, which
+          // the OS pins to the physical right whatever the app's direction is.
+          "workspace-topbar gap-1 ps-2",
           !ownsDesktopTitleBar && "[--workspace-topbar-height:--spacing(11)]",
-          props.mode === "inline" ? "pr-28" : "pr-3",
+          props.mode === "inline" ? "pe-28" : "pe-3",
           ownsDesktopTitleBar && "wco:pr-[calc(var(--workspace-native-controls-inset)+6rem)]",
           props.mode === "inline" && props.maximized && COLLAPSED_SIDEBAR_TITLEBAR_INSET_CLASS,
         )}
@@ -380,7 +383,12 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
             {props.surfaces.map((surface) => {
               const active = surface.id === props.activeSurfaceId;
               const pending = props.pendingSurfaceIds.has(surface.id);
-              const title = surfaceTitle(surface, props.previewSessions, props.terminalLabelsById);
+              const title = surfaceTitle(
+                surface,
+                props.previewSessions,
+                props.terminalLabelsById,
+                t,
+              );
               return (
                 <div
                   key={surface.id}
@@ -420,7 +428,7 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
                       "relative flex size-4 shrink-0 items-center justify-center rounded hover:bg-muted focus:opacity-100",
                       pending ? "opacity-100" : "opacity-0 group-hover:opacity-100",
                     )}
-                    aria-label={`Close ${title}`}
+                    aria-label={t("panel.tabs.closeAria", { title })}
                     onClick={() => props.onCloseSurface(surface)}
                   >
                     {pending ? (
@@ -442,14 +450,14 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
               <Menu>
                 <MenuTrigger
                   className="relative inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-                  aria-label="Add panel surface"
+                  aria-label={t("panel.tabs.add")}
                 >
                   <Plus className="size-4" />
                 </MenuTrigger>
                 <MenuPopup align="start" side="bottom" sideOffset={6} className="min-w-44">
                   <SurfaceMenuItem
                     available={props.browserAvailable}
-                    disabledReason={SURFACE_DISABLED_REASONS.browser}
+                    disabledReason={t(SURFACE_DISABLED_REASON_KEYS.browser)}
                     onClick={props.onAddBrowser}
                   >
                     <Globe2 />
@@ -461,7 +469,7 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
                   </SurfaceMenuItem>
                   <SurfaceMenuItem
                     available={props.filesAvailable}
-                    disabledReason={SURFACE_DISABLED_REASONS.files}
+                    disabledReason={t(SURFACE_DISABLED_REASON_KEYS.files)}
                     onClick={props.onAddFiles}
                   >
                     <Files />
@@ -469,7 +477,7 @@ export function RightPanelTabs(props: RightPanelTabsProps) {
                   </SurfaceMenuItem>
                   <SurfaceMenuItem
                     available={props.diffAvailable}
-                    disabledReason={SURFACE_DISABLED_REASONS.diff}
+                    disabledReason={t(SURFACE_DISABLED_REASON_KEYS.diff)}
                     onClick={props.onAddDiff}
                   >
                     <FileDiff />

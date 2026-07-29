@@ -94,7 +94,7 @@ export const ChatHeader = memo(function ChatHeader({
     <div
       className={cn(
         "@container/header-actions flex min-w-0 flex-1 items-center gap-2 sm:gap-3",
-        rightPanelOpen ? "pr-0" : "pr-16",
+        rightPanelOpen ? "pe-0" : "pe-16",
       )}
     >
       <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">

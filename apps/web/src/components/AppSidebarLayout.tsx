@@ -10,6 +10,7 @@ import {
 import { useLocation, useNavigate } from "@tanstack/react-router";
 
 import { isElectron } from "../env";
+import { useT } from "~/i18n";
 import { getLocalStorageItem } from "../hooks/useLocalStorage";
 import { resolveShortcutCommand, shortcutLabelForCommand } from "../keybindings";
 import { cn, isMacPlatform } from "../lib/utils";
@@ -59,6 +60,7 @@ function readInitialThreadSidebarWidth(): number {
 }
 
 function SidebarControl() {
+  const t = useT();
   const keybindings = useAtomValue(primaryServerKeybindingsAtom);
   const { toggleSidebar } = useSidebar();
   const isSidebarVisible = useSidebarVisibility();
@@ -91,7 +93,10 @@ function SidebarControl() {
 
   return (
     <div
-      className="pointer-events-none fixed left-[var(--workspace-controls-left)] top-[var(--workspace-controls-top)] z-50 flex h-[var(--workspace-topbar-height)] items-center"
+      // Travels with the sidebar: it is the sidebar's toggle, and it also gets
+      // white-on-artwork styling that only reads against the stage backdrop it
+      // is supposed to be sitting on.
+      className="pointer-events-none fixed start-[var(--workspace-controls-inline-start)] top-[var(--workspace-controls-top)] z-50 flex h-[var(--workspace-topbar-height)] items-center"
       data-sidebar-control=""
     >
       <Tooltip>
@@ -104,12 +109,14 @@ function SidebarControl() {
                   stageBackdropVariant &&
                   "[:hover,[data-pressed]]:bg-white/15 focus-visible:ring-white/90 focus-visible:ring-offset-blue-700 [&_svg]:stroke-white/90! [&_svg]:opacity-100! [&_svg]:hover:stroke-white!",
               )}
-              aria-label="Toggle main sidebar"
+              aria-label={t("sidebar.toggle")}
             />
           }
         />
         <TooltipPopup side="bottom">
-          Toggle main sidebar{shortcutLabel ? ` (${shortcutLabel})` : ""}
+          {shortcutLabel
+            ? t("sidebar.toggle.withShortcut", { shortcut: shortcutLabel })
+            : t("sidebar.toggle")}
         </TooltipPopup>
       </Tooltip>
     </div>

@@ -2,13 +2,11 @@ import { useCallback, useMemo } from "react";
 
 import { directionForLocale, resolveLocale, type Locale, type TextDirection } from "~/appearance";
 import { useClientSettings } from "~/hooks/useSettings";
-import { ar } from "./ar";
-import { en, type Dictionary, type TranslationKey } from "./en";
+import { STRINGS, type TranslationKey } from "./strings";
+import type { TranslationEntry } from "./strings/types";
 
-export type { Locale, TextDirection };
-export type { TranslationKey };
-
-const DICTIONARIES: Record<Locale, Partial<Dictionary>> = { en, ar };
+export type { Locale, TextDirection, TranslationKey };
+export { STRINGS };
 
 export type TranslationValues = Readonly<Record<string, string | number>>;
 
@@ -25,7 +23,11 @@ function interpolate(template: string, values: TranslationValues): string {
  * translated locale never renders a key.
  */
 export function translate(locale: Locale, key: TranslationKey, values?: TranslationValues): string {
-  const template = DICTIONARIES[locale]?.[key] ?? en[key];
+  // Annotated rather than inferred: indexing the merged map by the whole key
+  // union yields a union of entry shapes (only some carry `ar`), and widening it
+  // to the common shape here is what keeps the lookup readable.
+  const entry: TranslationEntry = STRINGS[key];
+  const template = locale === "en" ? entry.en : (entry.ar ?? entry.en);
   return values ? interpolate(template, values) : template;
 }
 
