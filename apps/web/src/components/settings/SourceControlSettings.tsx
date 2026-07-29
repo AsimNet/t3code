@@ -200,7 +200,7 @@ function SourceControlItemMark({
       <Icon className="size-4.5 text-foreground/80" aria-hidden />
       <span
         className={cn(
-          "pointer-events-none absolute -left-0.5 -top-0.5 size-2 rounded-full ring-2 ring-background",
+          "pointer-events-none absolute -start-0.5 -top-0.5 size-2 rounded-full ring-2 ring-background",
           dotClassName,
         )}
         aria-hidden
@@ -249,8 +249,8 @@ function itemSummary({
       return (
         <span>
           {item.label} is not authenticated on this server. Sign in or configure credentials using
-          the <code className="rounded bg-muted px-1 py-px text-[11px]">{item.executable}</code>{" "}
-          tool on the server host to enable change request features.
+          the <code className="rounded bg-muted px-1 py-px text-2xs">{item.executable}</code> tool
+          on the server host to enable change request features.
         </span>
       );
     }
@@ -442,7 +442,7 @@ function SourceControlSectionSkeleton({
                 <span className="relative inline-flex size-5 shrink-0 items-center justify-center">
                   <Skeleton className="size-4.5 rounded-md" />
                   <Skeleton
-                    className="pointer-events-none absolute -left-0.5 -top-0.5 size-2 rounded-full ring-2 ring-background"
+                    className="pointer-events-none absolute -start-0.5 -top-0.5 size-2 rounded-full ring-2 ring-background"
                     aria-hidden
                   />
                 </span>

@@ -126,7 +126,7 @@ export function PreviewChromeRow({
                 />
               }
             >
-              <ArrowLeft />
+              <ArrowLeft className="rtl:rotate-180" />
             </TooltipTrigger>
             <TooltipPopup>Back</TooltipPopup>
           </Tooltip>
@@ -143,7 +143,7 @@ export function PreviewChromeRow({
                 />
               }
             >
-              <ArrowRight />
+              <ArrowRight className="rtl:rotate-180" />
             </TooltipTrigger>
             <TooltipPopup>Forward</TooltipPopup>
           </Tooltip>
@@ -208,7 +208,7 @@ export function PreviewChromeRow({
           {onOpenInBrowser && !inputFocused ? (
             <InputGroupAddon
               align="inline-end"
-              className="pointer-events-none absolute inset-y-0 right-0 opacity-0 transition-opacity group-hover/address:pointer-events-auto group-hover/address:opacity-100"
+              className="pointer-events-none absolute inset-y-0 end-0 opacity-0 transition-opacity group-hover/address:pointer-events-auto group-hover/address:opacity-100"
             >
               <Tooltip>
                 <TooltipTrigger
@@ -273,7 +273,7 @@ export function PreviewChromeRow({
             >
               <Camera className={cn(recording && "text-destructive")} />
               {recording ? (
-                <span className="absolute right-0.5 top-0.5 size-1.5 animate-status-pulse rounded-full bg-destructive" />
+                <span className="absolute end-0.5 top-0.5 size-1.5 animate-status-pulse rounded-full bg-destructive" />
               ) : null}
             </TooltipTrigger>
             <TooltipPopup>
@@ -310,7 +310,7 @@ export function PreviewChromeRow({
       {loadProgress > 0 ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute bottom-0 left-0 z-10 h-0.5 rounded-r-full bg-primary transition-all duration-150 ease-out"
+          className="pointer-events-none absolute bottom-0 start-0 z-10 h-0.5 rounded-e-full bg-primary transition-all duration-150 ease-out"
           style={{
             width: `${loadProgress}%`,
             boxShadow: "0 0 6px 1px var(--color-ring)",

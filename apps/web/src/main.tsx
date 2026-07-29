@@ -8,6 +8,9 @@ import { createHashHistory, createBrowserHistory } from "@tanstack/react-router"
 import "@fontsource-variable/dm-sans/index.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
+// Arabic glyphs for the RTL locale; DM Sans and JetBrains Mono ship none, so
+// without this Arabic text falls back to whatever the platform happens to have.
+import "@fontsource-variable/noto-sans-arabic/index.css";
 import "@xterm/xterm/css/xterm.css";
 import "./index.css";
 

@@ -142,7 +142,7 @@ function ExpandableHeaderSearch({
 
   return (
     <div className="relative">
-      <SearchIcon className="pointer-events-none absolute top-1/2 left-2 size-3 -translate-y-1/2 text-muted-foreground" />
+      <SearchIcon className="pointer-events-none absolute top-1/2 start-2 size-3 -translate-y-1/2 text-muted-foreground" />
       <input
         ref={inputRef}
         autoFocus
@@ -161,7 +161,7 @@ function ExpandableHeaderSearch({
         }}
         placeholder="Search keybindings"
         aria-label="Search keybindings"
-        className="h-6 w-44 rounded-md border border-input bg-background pl-7 pr-2 text-[11px] text-foreground outline-none placeholder:text-muted-foreground/72 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24"
+        className="h-6 w-44 rounded-md border border-input bg-background ps-7 pe-2 text-2xs text-foreground outline-none placeholder:text-muted-foreground/72 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24"
       />
     </div>
   );
@@ -365,7 +365,7 @@ function WhenExpressionNodeEditor({
           aria-label={`Negate ${condition.identifier}`}
           variant="outline"
           size="xs"
-          className="h-7 min-w-10 px-2 text-[11px] sm:h-7"
+          className="h-7 min-w-10 px-2 text-2xs sm:h-7"
         >
           Not
         </Toggle>
@@ -406,7 +406,7 @@ function WhenExpressionNodeEditor({
             aria-label="Negate group"
             variant="outline"
             size="xs"
-            className="h-7 min-w-10 px-2 text-[11px] sm:h-7"
+            className="h-7 min-w-10 px-2 text-2xs sm:h-7"
           >
             Not
           </Toggle>
@@ -415,7 +415,7 @@ function WhenExpressionNodeEditor({
               type="button"
               variant="ghost"
               size="icon-sm"
-              className="ml-auto size-7 sm:size-7"
+              className="ms-auto size-7 sm:size-7"
               aria-label="Remove negated group"
               onClick={onRemove}
             >
@@ -423,9 +423,9 @@ function WhenExpressionNodeEditor({
             </Button>
           ) : null}
         </div>
-        <div className="relative pl-4">
-          <span className="absolute top-0 bottom-0 left-1.5 w-px bg-border/70" aria-hidden />
-          <span className="absolute top-4 left-1.5 h-px w-2.5 bg-border/70" aria-hidden />
+        <div className="relative ps-4">
+          <span className="absolute top-0 bottom-0 start-1.5 w-px bg-border/70" aria-hidden />
+          <span className="absolute top-4 start-1.5 h-px w-2.5 bg-border/70" aria-hidden />
           <WhenExpressionNodeEditor
             node={node.node}
             variables={variables}
@@ -544,7 +544,7 @@ function WhenExpressionNodeEditor({
             type="button"
             variant="ghost"
             size="icon-sm"
-            className="ml-auto size-7 sm:size-7"
+            className="ms-auto size-7 sm:size-7"
             aria-label="Remove group"
             onClick={onRemove}
           >
@@ -554,17 +554,17 @@ function WhenExpressionNodeEditor({
       </div>
       <div className="space-y-2">
         {childEntries.map(({ child, key }) => (
-          <div key={key} className="relative pl-4">
+          <div key={key} className="relative ps-4">
             <span
               className={cn(
-                "absolute top-0 bottom-0 left-1.5 w-px",
+                "absolute top-0 bottom-0 start-1.5 w-px",
                 depth === 0 ? "bg-border" : "bg-border/70",
               )}
               aria-hidden
             />
             <span
               className={cn(
-                "absolute top-4 left-1.5 h-px w-2.5",
+                "absolute top-4 start-1.5 h-px w-2.5",
                 depth === 0 ? "bg-border" : "bg-border/70",
               )}
               aria-hidden
@@ -672,18 +672,18 @@ function WhenExpressionBuilder({
             aria-label="When expression"
             className={cn(
               "h-7 rounded-md font-mono text-[12px] leading-7 sm:h-7 sm:leading-7",
-              unknownIdentifiers.length > 0 && "pr-9",
+              unknownIdentifiers.length > 0 && "pe-9",
               parseError && "border-destructive/70 focus-visible:border-destructive",
             )}
           />
           {unknownIdentifiers.length > 0 ? (
-            <span className="absolute inset-y-0 right-2 flex items-center">
+            <span className="absolute inset-y-0 end-2 flex items-center">
               <UnknownWhenVariableWarning identifiers={unknownIdentifiers} />
             </span>
           ) : null}
         </div>
         {parseError ? (
-          <div className="flex items-center gap-1.5 text-[11px] text-destructive">
+          <div className="flex items-center gap-1.5 text-2xs text-destructive">
             <CircleXIcon className="size-3.5" />
             {parseError}
           </div>
@@ -814,7 +814,7 @@ function KeybindingTableRow({
 
   return (
     <div className="grid grid-cols-[minmax(190px,1.1fr)_minmax(220px,0.85fr)_minmax(210px,1fr)_60px] items-center px-4 py-1.5 text-sm even:bg-muted/15 hover:bg-accent/40">
-      <div className="min-w-0 pr-4">
+      <div className="min-w-0 pe-4">
         <div className="flex min-w-0 items-center gap-1.5">
           <Tooltip>
             <TooltipTrigger
@@ -831,7 +831,7 @@ function KeybindingTableRow({
           </Tooltip>
         </div>
       </div>
-      <div className="flex min-w-0 items-center gap-2 pr-4">
+      <div className="flex min-w-0 items-center gap-2 pe-4">
         {showPill ? (
           <button
             type="button"
@@ -840,7 +840,7 @@ function KeybindingTableRow({
             className="group inline-flex h-7 items-center gap-1.5 rounded-md border border-transparent px-1.5 outline-none transition-colors hover:border-border/70 hover:bg-background focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24"
           >
             <KeybindingPill value={row.key} />
-            <span className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground/0 transition-opacity group-hover:text-muted-foreground/70 group-focus-visible:text-muted-foreground/70">
+            <span className="text-3xs uppercase tracking-[0.08em] text-muted-foreground/0 transition-opacity group-hover:text-muted-foreground/70 group-focus-visible:text-muted-foreground/70">
               Edit
             </span>
           </button>
@@ -872,11 +872,11 @@ function KeybindingTableRow({
           </Button>
         ) : null}
       </div>
-      <div className="pr-4">
+      <div className="pe-4">
         <Popover>
           <PopoverTrigger
             className={cn(
-              "inline-flex h-7 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-2.5 text-left font-mono text-[12px] text-foreground shadow-xs/5 outline-none transition-colors hover:bg-accent focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24",
+              "inline-flex h-7 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-2.5 text-start font-mono text-[12px] text-foreground shadow-xs/5 outline-none transition-colors hover:bg-accent focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24",
               !whenDraftExpression && "text-muted-foreground",
             )}
             aria-label={`Edit when clause for ${commandLabel(row.command)}`}
@@ -986,7 +986,7 @@ function NewKeybindingTableRow({
 
   return (
     <div className="grid grid-cols-[minmax(190px,1.1fr)_minmax(220px,0.85fr)_minmax(210px,1fr)_60px] items-center px-4 py-1.5 text-sm even:bg-muted/15 hover:bg-accent/40">
-      <div className="min-w-0 pr-4">
+      <div className="min-w-0 pe-4">
         <Select
           value={commandDraft}
           onValueChange={(value) => setCommandDraft(value as KeybindingCommand)}
@@ -1010,7 +1010,7 @@ function NewKeybindingTableRow({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex min-w-0 items-center gap-2 pr-4">
+      <div className="flex min-w-0 items-center gap-2 pe-4">
         <Input
           data-keybinding-capture=""
           aria-label={`Keybinding for ${commandLabelText}`}
@@ -1034,11 +1034,11 @@ function NewKeybindingTableRow({
           {isSaving ? "Saving" : "Save"}
         </Button>
       </div>
-      <div className="pr-4">
+      <div className="pe-4">
         <Popover>
           <PopoverTrigger
             className={cn(
-              "inline-flex h-7 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-2.5 text-left font-mono text-[12px] text-foreground shadow-xs/5 outline-none transition-colors hover:bg-accent focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24",
+              "inline-flex h-7 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-2.5 text-start font-mono text-[12px] text-foreground shadow-xs/5 outline-none transition-colors hover:bg-accent focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24",
               !whenDraftExpression && "text-muted-foreground",
             )}
             aria-label={`Edit when clause for ${commandLabelText}`}
@@ -1221,7 +1221,7 @@ export function KeybindingsSettingsPanel() {
   );
 
   const bindingsCount = (
-    <span className="text-[11px] text-muted-foreground">
+    <span className="text-2xs text-muted-foreground">
       {rows.length + (isAddingBinding ? 1 : 0)}{" "}
       {rows.length + (isAddingBinding ? 1 : 0) === 1 ? "binding" : "bindings"}
     </span>
@@ -1295,7 +1295,7 @@ export function KeybindingsSettingsPanel() {
           hideScrollbars
           className="w-full max-w-full rounded-none"
         >
-          <div className="grid min-w-[680px] grid-cols-[minmax(190px,1.1fr)_minmax(220px,0.85fr)_minmax(210px,1fr)_60px] border-b border-border/70 bg-muted/25 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">
+          <div className="grid min-w-[680px] grid-cols-[minmax(190px,1.1fr)_minmax(220px,0.85fr)_minmax(210px,1fr)_60px] border-b border-border/70 bg-muted/25 px-4 py-2 text-2xs font-semibold uppercase tracking-[0.07em] text-muted-foreground">
             <div>Command</div>
             <div>Keybinding</div>
             <div>When</div>

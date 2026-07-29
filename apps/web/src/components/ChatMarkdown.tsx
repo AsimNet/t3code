@@ -518,11 +518,16 @@ function MarkdownDetails({
       data-markdown-details-open={isOpen ? "true" : "false"}
     >
       <CollapsibleTrigger
-        className="flex w-full items-center gap-2 py-2 text-left text-sm font-medium text-foreground data-panel-open:[&_svg]:rotate-90"
+        className="flex w-full items-center gap-2 py-2 text-start text-sm font-medium text-foreground data-panel-open:[&_svg]:rotate-90"
         data-markdown-details-summary=""
       >
         <ChevronRightIcon
-          className="size-4 shrink-0 text-muted-foreground transition-transform"
+          className={cn(
+            "size-4 shrink-0 text-muted-foreground transition-transform",
+            // Open rotates to point down via the trigger's data-panel-open rule;
+            // only the closed, sideways state mirrors.
+            !isOpen && "rtl:rotate-180",
+          )}
           aria-hidden
         />
         <span>{summary}</span>
@@ -1262,7 +1267,7 @@ const MarkdownFileLink = memo(function MarkdownFileLink({
       />
       <TooltipPopup
         side="top"
-        className="max-w-[min(40rem,calc(100vw-2rem))] font-mono text-[11px] leading-tight"
+        className="max-w-[min(40rem,calc(100vw-2rem))] font-mono text-2xs leading-tight"
       >
         <div className="markdown-file-link-tooltip-scroll overflow-x-auto whitespace-nowrap">
           {displayPath}

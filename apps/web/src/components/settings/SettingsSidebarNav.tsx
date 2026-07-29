@@ -22,6 +22,7 @@ import {
   useSidebar,
 } from "../ui/sidebar";
 import { T3ConnectSidebarAvatar, T3ConnectSidebarSignIn } from "../clerk/T3ConnectSidebarSignIn";
+import { useT, type TranslationKey } from "../../i18n";
 
 export type SettingsSectionPath =
   | "/settings/general"
@@ -34,21 +35,22 @@ export type SettingsSectionPath =
   | "/settings/archived";
 
 export const SETTINGS_NAV_ITEMS: ReadonlyArray<{
-  label: string;
+  labelKey: TranslationKey;
   to: SettingsSectionPath;
   icon: ComponentType<{ className?: string }>;
 }> = [
-  { label: "General", to: "/settings/general", icon: Settings2Icon },
-  { label: "Appearance", to: "/settings/appearance", icon: PaletteIcon },
-  { label: "Keybindings", to: "/settings/keybindings", icon: KeyboardIcon },
-  { label: "Providers", to: "/settings/providers", icon: BotIcon },
-  { label: "Source Control", to: "/settings/source-control", icon: GitBranchIcon },
-  { label: "Connections", to: "/settings/connections", icon: Link2Icon },
-  { label: "Beta", to: "/settings/beta", icon: FlaskConicalIcon },
-  { label: "Archive", to: "/settings/archived", icon: ArchiveIcon },
+  { labelKey: "settings.nav.general", to: "/settings/general", icon: Settings2Icon },
+  { labelKey: "settings.nav.appearance", to: "/settings/appearance", icon: PaletteIcon },
+  { labelKey: "settings.nav.keybindings", to: "/settings/keybindings", icon: KeyboardIcon },
+  { labelKey: "settings.nav.providers", to: "/settings/providers", icon: BotIcon },
+  { labelKey: "settings.nav.sourceControl", to: "/settings/source-control", icon: GitBranchIcon },
+  { labelKey: "settings.nav.connections", to: "/settings/connections", icon: Link2Icon },
+  { labelKey: "settings.nav.beta", to: "/settings/beta", icon: FlaskConicalIcon },
+  { labelKey: "settings.nav.archived", to: "/settings/archived", icon: ArchiveIcon },
 ];
 
 export function SettingsSidebarNav({ pathname }: { pathname: string }) {
+  const t = useT();
   const navigate = useNavigate();
   const canGoBack = useCanGoBack();
   const { isMobile, setOpenMobile } = useSidebar();
@@ -87,7 +89,7 @@ export function SettingsSidebarNav({ pathname }: { pathname: string }) {
                     onClick={() => handleSectionClick(item.to)}
                   >
                     <Icon />
-                    <span className="truncate">{item.label}</span>
+                    <span className="truncate">{t(item.labelKey)}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );
@@ -101,8 +103,10 @@ export function SettingsSidebarNav({ pathname }: { pathname: string }) {
           <SidebarMenu className="min-w-0 flex-1">
             <SidebarMenuItem>
               <SidebarMenuButton onClick={handleBackClick}>
-                <ArrowLeftIcon />
-                <span>Back</span>
+                {/* "Back" points the other way in RTL: this arrow is a direction
+                    affordance, not decoration. */}
+                <ArrowLeftIcon className="rtl:rotate-180" />
+                <span>{t("common.back")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

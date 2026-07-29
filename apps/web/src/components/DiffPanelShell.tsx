@@ -29,7 +29,7 @@ export function DiffPanelShell(props: {
       className={cn(
         "flex h-full min-w-0 flex-col bg-background",
         props.mode === "inline"
-          ? "w-[42vw] min-w-[360px] max-w-[560px] shrink-0 border-l border-border"
+          ? "w-[42vw] min-w-[360px] max-w-[560px] shrink-0 border-s border-border"
           : "w-full",
       )}
     >
@@ -70,7 +70,7 @@ export function DiffPanelLoadingState(props: { label: string }) {
       >
         <div className="flex items-center gap-2 border-b border-border/50 px-3 py-2">
           <Skeleton className="h-4 w-32 rounded-full" />
-          <Skeleton className="ml-auto h-4 w-20 rounded-full" />
+          <Skeleton className="ms-auto h-4 w-20 rounded-full" />
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-4 px-3 py-4">
           <div className="space-y-2">

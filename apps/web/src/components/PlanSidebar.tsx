@@ -140,7 +140,7 @@ const PlanSidebar = memo(function PlanSidebar({
       className={cn(
         "flex min-h-0 flex-col bg-card/50",
         mode === "sidebar"
-          ? "h-full w-[340px] shrink-0 border-l border-border/70"
+          ? "h-full w-[340px] shrink-0 border-s border-border/70"
           : "h-full w-full",
       )}
     >
@@ -155,7 +155,7 @@ const PlanSidebar = memo(function PlanSidebar({
             {label}
           </Badge>
           {activePlan ? (
-            <span className="text-[11px] text-muted-foreground/60 tabular-nums">
+            <span className="text-2xs text-muted-foreground/60 tabular-nums">
               {formatTimestamp(activePlan.createdAt, timestampFormat)}
             </span>
           ) : null}
@@ -205,7 +205,7 @@ const PlanSidebar = memo(function PlanSidebar({
           {/* Plan Steps */}
           {activePlan && activePlan.steps.length > 0 ? (
             <div className="space-y-1">
-              <p className="mb-2 text-[10px] font-semibold tracking-widest text-muted-foreground/40 uppercase">
+              <p className="mb-2 text-3xs font-semibold tracking-widest text-muted-foreground/40 uppercase">
                 Steps
               </p>
               {activePlan.steps.map((step) => (
@@ -240,15 +240,15 @@ const PlanSidebar = memo(function PlanSidebar({
             <div className="space-y-2">
               <button
                 type="button"
-                className="group flex w-full items-center gap-1.5 text-left"
+                className="group flex w-full items-center gap-1.5 text-start"
                 onClick={() => setProposedPlanExpanded((v) => !v)}
               >
                 {proposedPlanExpanded ? (
                   <ChevronDownIcon className="size-3 shrink-0 text-muted-foreground/40 transition-transform" />
                 ) : (
-                  <ChevronRightIcon className="size-3 shrink-0 text-muted-foreground/40 transition-transform" />
+                  <ChevronRightIcon className="size-3 shrink-0 text-muted-foreground/40 transition-transform rtl:rotate-180" />
                 )}
-                <span className="text-[10px] font-semibold tracking-widest text-muted-foreground/40 uppercase group-hover:text-muted-foreground/60">
+                <span className="text-3xs font-semibold tracking-widest text-muted-foreground/40 uppercase group-hover:text-muted-foreground/60">
                   {planTitle ?? "Full Plan"}
                 </span>
               </button>
@@ -269,7 +269,7 @@ const PlanSidebar = memo(function PlanSidebar({
           {!activePlan && !planMarkdown ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-[13px] text-muted-foreground/40">No active plan yet.</p>
-              <p className="mt-1 text-[11px] text-muted-foreground/30">
+              <p className="mt-1 text-2xs text-muted-foreground/30">
                 Plans will appear here when generated.
               </p>
             </div>

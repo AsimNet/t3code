@@ -234,12 +234,12 @@ function ProviderEnvironmentSection(props: {
       ) : (
         <div className="overflow-hidden rounded-md border border-border/70">
           <Table>
-            <TableHeader className="bg-muted/25 text-[11px] text-muted-foreground">
+            <TableHeader className="bg-muted/25 text-2xs text-muted-foreground">
               <TableRow className="hover:bg-transparent">
                 <TableHead>Variable</TableHead>
                 <TableHead>Value</TableHead>
                 <TableHead className="w-20">Sensitive</TableHead>
-                <TableHead className="w-12 text-right">
+                <TableHead className="w-12 text-end">
                   <span className="sr-only">Options</span>
                 </TableHead>
               </TableRow>
@@ -511,14 +511,14 @@ export function ProviderInstanceCard({
       indicatorBackground="var(--card)"
       className="size-5"
       iconClassName="size-4 text-foreground/80"
-      badgeClassName="right-[-0.125rem] bottom-[-0.125rem] h-3 min-w-3 px-0.5 text-[7px]"
+      badgeClassName="end-[-0.125rem] bottom-[-0.125rem] h-3 min-w-3 px-0.5 text-[7px]"
     />
   ) : FallbackIconComponent ? (
     <span className="relative inline-flex size-5 shrink-0 items-center justify-center">
       <FallbackIconComponent className="size-4 text-foreground/80" aria-hidden />
       <span
         className={cn(
-          "pointer-events-none absolute -left-0.5 -top-0.5 size-2 rounded-full ring-2 ring-card",
+          "pointer-events-none absolute -start-0.5 -top-0.5 size-2 rounded-full ring-2 ring-card",
           statusStyle.dot,
         )}
         aria-hidden
@@ -535,7 +535,7 @@ export function ProviderInstanceCard({
         {displayName}
       </h3>
       {String(instanceId) !== String(instance.driver) ? (
-        <code className="truncate rounded bg-muted/60 px-1 py-0.5 text-[10px] text-muted-foreground">
+        <code className="truncate rounded bg-muted/60 px-1 py-0.5 text-3xs text-muted-foreground">
           {instanceId}
         </code>
       ) : null}
@@ -662,16 +662,16 @@ export function ProviderInstanceCard({
                         </Button>
                       ) : null}
                       {onRunUpdate && updateCommand ? (
-                        <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                        <div className="flex items-center gap-2 text-3xs font-medium uppercase tracking-wider text-muted-foreground">
                           <span aria-hidden className="h-px flex-1 bg-border" />
                           or, update manually using
                           <span aria-hidden className="h-px flex-1 bg-border" />
                         </div>
                       ) : null}
                       {updateCommand ? (
-                        <div className="flex min-w-0 items-center gap-1 rounded-md border border-border/70 bg-muted/40 py-0.5 pr-0.5 pl-2">
+                        <div className="flex min-w-0 items-center gap-1 rounded-md border border-border/70 bg-muted/40 py-0.5 pe-0.5 ps-2">
                           <ScrollArea scrollFade className="h-8 min-w-0 flex-1 rounded-none">
-                            <code className="flex h-full w-max items-center whitespace-nowrap pr-3 font-mono text-[11px] text-foreground">
+                            <code className="flex h-full w-max items-center whitespace-nowrap pe-3 font-mono text-2xs text-foreground">
                               {updateCommand}
                             </code>
                           </ScrollArea>

@@ -99,8 +99,11 @@ function getIconOption(
   });
 }
 
+// The light value matches the default `soft` light tone (--tone-background in
+// apps/web/src/index.css), so an unpainted or resizing window does not flash
+// pure white at a reader who chose a dimmer surface.
 function getInitialWindowBackgroundColor(shouldUseDarkColors: boolean): string {
-  return shouldUseDarkColors ? "#0a0a0a" : "#ffffff";
+  return shouldUseDarkColors ? "#0a0a0a" : "#f3f3f3";
 }
 
 type DisplayBounds = Pick<Electron.Rectangle, "x" | "y" | "width" | "height">;

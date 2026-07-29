@@ -565,7 +565,7 @@ function PublishRepositoryDialog(props: PublishRepositoryDialogProps) {
                     onClick={isClickable ? () => setPublishWizardStep(index) : undefined}
                     disabled={!isClickable}
                     className={cn(
-                      "grid min-w-0 grid-cols-[1rem_minmax(0,1fr)] gap-x-2 rounded-lg border px-3 py-2 text-left",
+                      "grid min-w-0 grid-cols-[1rem_minmax(0,1fr)] gap-x-2 rounded-lg border px-3 py-2 text-start",
                       index === publishWizardStep
                         ? "border-primary bg-primary/10 ring-1 ring-primary/25 dark:border-transparent"
                         : isComplete
@@ -587,7 +587,7 @@ function PublishRepositoryDialog(props: PublishRepositoryDialogProps) {
                     >
                       {isComplete ? <CheckIcon className="size-3" /> : null}
                     </span>
-                    <span className="text-[10px] font-medium uppercase text-muted-foreground">
+                    <span className="text-3xs font-medium uppercase text-muted-foreground">
                       Step {index + 1}
                     </span>
                     <span className="truncate text-xs font-semibold text-foreground">
@@ -627,7 +627,7 @@ function PublishRepositoryDialog(props: PublishRepositoryDialogProps) {
                       return (
                         <div
                           key={option.value}
-                          className="relative flex cursor-not-allowed items-center gap-3 rounded-lg border border-border bg-background px-3 py-3 text-left opacity-55 dark:border-transparent dark:bg-white/[0.035]"
+                          className="relative flex cursor-not-allowed items-center gap-3 rounded-lg border border-border bg-background px-3 py-3 text-start opacity-55 dark:border-transparent dark:bg-white/[0.035]"
                         >
                           <option.Icon
                             className="size-5 shrink-0 text-muted-foreground"
@@ -642,7 +642,7 @@ function PublishRepositoryDialog(props: PublishRepositoryDialogProps) {
                                 <Button
                                   variant="outline"
                                   size="xs"
-                                  className="h-5 rounded-[.25rem] px-1.5 text-[10px] text-warning-foreground"
+                                  className="h-5 rounded-[.25rem] px-1.5 text-3xs text-warning-foreground"
                                   onClick={(event) => {
                                     event.preventDefault();
                                     event.stopPropagation();
@@ -667,7 +667,7 @@ function PublishRepositoryDialog(props: PublishRepositoryDialogProps) {
                         key={option.value}
                         value={option.value}
                         className={cn(
-                          "relative flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 text-left outline-none transition-[background-color,border-color,box-shadow]",
+                          "relative flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 text-start outline-none transition-[background-color,border-color,box-shadow]",
                           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                           isSelected
                             ? "border-primary bg-background shadow-sm ring-2 ring-primary/35 dark:border-transparent dark:bg-primary/10 dark:shadow-none dark:ring-1 dark:ring-primary/30"
@@ -693,7 +693,7 @@ function PublishRepositoryDialog(props: PublishRepositoryDialogProps) {
                     Repository
                   </label>
                   <div className="flex items-stretch overflow-hidden rounded-md border border-input bg-background focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-ring">
-                    <span className="flex shrink-0 items-center gap-1.5 border-r border-input bg-muted/50 px-2.5 font-mono text-xs text-muted-foreground">
+                    <span className="flex shrink-0 items-center gap-1.5 border-e border-input bg-muted/50 px-2.5 font-mono text-xs text-muted-foreground">
                       <currentPublishProvider.Icon className="size-3.5" />
                       {publishHost}/
                     </span>
@@ -753,7 +753,7 @@ function PublishRepositoryDialog(props: PublishRepositoryDialogProps) {
                           key={option.value}
                           value={option.value}
                           className={cn(
-                            "relative flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-left outline-none transition-[background-color,border-color,box-shadow]",
+                            "relative flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-start outline-none transition-[background-color,border-color,box-shadow]",
                             "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                             isSelected
                               ? "border-primary bg-background shadow-sm ring-2 ring-primary/35 dark:border-transparent dark:bg-primary/10 dark:shadow-none dark:ring-1 dark:ring-primary/30"
@@ -1680,7 +1680,7 @@ export default function GitActionsControl({
           }}
         >
           <GitBranchPlusIcon className="size-3.5" aria-hidden />
-          <span className="ml-0.5">
+          <span className="ms-0.5">
             {initAction.isPending ? "Initializing..." : "Initialize Git"}
           </span>
         </Button>
@@ -1703,7 +1703,7 @@ export default function GitActionsControl({
                   quickAction={quickAction}
                   SourceControlIcon={SourceControlIcon}
                 />
-                <span className="sr-only @3xl/header-actions:not-sr-only @3xl/header-actions:ml-0.5">
+                <span className="sr-only @3xl/header-actions:not-sr-only @3xl/header-actions:ms-0.5">
                   {quickAction.label}
                 </span>
               </PopoverTrigger>
@@ -1719,7 +1719,7 @@ export default function GitActionsControl({
               onClick={runQuickAction}
             >
               <GitQuickActionIcon quickAction={quickAction} SourceControlIcon={SourceControlIcon} />
-              <span className="sr-only @3xl/header-actions:not-sr-only @3xl/header-actions:ml-0.5">
+              <span className="sr-only @3xl/header-actions:not-sr-only @3xl/header-actions:ms-0.5">
                 {quickAction.label}
               </span>
             </Button>
@@ -1841,7 +1841,7 @@ export default function GitActionsControl({
                     {gitStatusForActions?.refName ?? "(detached HEAD)"}
                   </span>
                   {isDefaultRef && (
-                    <span className="text-right text-warning">Warning: default refName</span>
+                    <span className="text-end text-warning">Warning: default refName</span>
                   )}
                 </span>
               </div>
@@ -1907,7 +1907,7 @@ export default function GitActionsControl({
                               )}
                               <button
                                 type="button"
-                                className="flex flex-1 items-center justify-between gap-3 text-left truncate"
+                                className="flex flex-1 items-center justify-between gap-3 text-start truncate"
                                 onClick={() => openChangedFileInEditor(file.path)}
                               >
                                 <span
@@ -2007,7 +2007,7 @@ export default function GitActionsControl({
           </DialogHeader>
           <DialogFooter className="dark:border-transparent dark:bg-transparent sm:flex-wrap sm:items-center">
             <Button
-              className="w-full sm:mr-auto sm:w-auto"
+              className="w-full sm:me-auto sm:w-auto"
               variant="outline"
               size="sm"
               onClick={() => setPendingDefaultBranchAction(null)}

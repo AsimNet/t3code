@@ -62,8 +62,39 @@ export const EnvironmentIdentificationMode = Schema.Literals(["artwork", "pill",
 export type EnvironmentIdentificationMode = typeof EnvironmentIdentificationMode.Type;
 export const DEFAULT_ENVIRONMENT_IDENTIFICATION_MODE: EnvironmentIdentificationMode = "artwork";
 
+// `system` follows the browser/OS languages; an explicit locale also decides
+// text direction, so picking `ar` puts the whole client in RTL.
+export const AppLanguage = Schema.Literals(["system", "en", "ar"]);
+export type AppLanguage = typeof AppLanguage.Type;
+export const DEFAULT_APP_LANGUAGE: AppLanguage = "system";
+
+// Percentage applied to every `--text-*` step, so all className-based text
+// scales together instead of only the chat transcript.
+export const MIN_FONT_SCALE = 80;
+export const MAX_FONT_SCALE = 140;
+export const FONT_SCALE_STEP = 5;
+export const FontScale = Schema.Int.check(
+  Schema.isBetween({
+    minimum: MIN_FONT_SCALE,
+    maximum: MAX_FONT_SCALE,
+  }),
+);
+export type FontScale = typeof FontScale.Type;
+export const DEFAULT_FONT_SCALE: FontScale = 100;
+
+// How bright the light palette is allowed to get. `bright` is the original
+// near-white surface set; `soft` and `paper` step the whole hierarchy down so
+// large light screens stop glaring.
+export const LightTone = Schema.Literals(["bright", "soft", "paper"]);
+export type LightTone = typeof LightTone.Type;
+export const DEFAULT_LIGHT_TONE: LightTone = "soft";
+
 export const ClientSettingsSchema = Schema.Struct({
   autoOpenPlanSidebar: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
+  // Whether the transcript follows streaming output. Off by default: the
+  // per-chunk scrolling is the single most-reported source of eye strain, and
+  // the scroll-to-end pill is always there for a deliberate jump.
+  chatAutoScroll: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
   confirmThreadArchive: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
   confirmThreadDelete: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
   dismissedProviderUpdateNotificationKeys: Schema.Array(TrimmedNonEmptyString).pipe(
@@ -73,9 +104,12 @@ export const ClientSettingsSchema = Schema.Struct({
   environmentIdentificationMode: EnvironmentIdentificationMode.pipe(
     Schema.withDecodingDefault(Effect.succeed(DEFAULT_ENVIRONMENT_IDENTIFICATION_MODE)),
   ),
+  fontScale: FontScale.pipe(Schema.withDecodingDefault(Effect.succeed(DEFAULT_FONT_SCALE))),
   glassOpacity: GlassOpacity.pipe(
     Schema.withDecodingDefault(Effect.succeed(DEFAULT_GLASS_OPACITY)),
   ),
+  language: AppLanguage.pipe(Schema.withDecodingDefault(Effect.succeed(DEFAULT_APP_LANGUAGE))),
+  lightTone: LightTone.pipe(Schema.withDecodingDefault(Effect.succeed(DEFAULT_LIGHT_TONE))),
   // Model favorites. Historically keyed by provider kind, now
   // widened to `ProviderInstanceId` so users can favorite a specific model
   // on a custom provider instance (e.g. "Codex Personal · gpt-5") without
@@ -101,6 +135,9 @@ export const ClientSettingsSchema = Schema.Struct({
       modelOrder: Schema.Array(Schema.String).pipe(Schema.withDecodingDefault(Effect.succeed([]))),
     }),
   ).pipe(Schema.withDecodingDefault(Effect.succeed({}))),
+  // Forces the reduced-motion path on regardless of the OS setting: instant
+  // scrolls instead of animated ones, and no looping indicator animations.
+  reduceMotion: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
   sidebarAutoSettleAfterDays: Schema.NullOr(SidebarAutoSettleAfterDays).pipe(
     Schema.withDecodingDefault(Effect.succeed(DEFAULT_SIDEBAR_AUTO_SETTLE_AFTER_DAYS)),
   ),
@@ -675,11 +712,16 @@ export type ServerSettingsPatch = typeof ServerSettingsPatch.Type;
 
 export const ClientSettingsPatch = Schema.Struct({
   autoOpenPlanSidebar: Schema.optionalKey(Schema.Boolean),
+  chatAutoScroll: Schema.optionalKey(Schema.Boolean),
   confirmThreadArchive: Schema.optionalKey(Schema.Boolean),
   confirmThreadDelete: Schema.optionalKey(Schema.Boolean),
   diffIgnoreWhitespace: Schema.optionalKey(Schema.Boolean),
   environmentIdentificationMode: Schema.optionalKey(EnvironmentIdentificationMode),
+  fontScale: Schema.optionalKey(FontScale),
   glassOpacity: Schema.optionalKey(GlassOpacity),
+  language: Schema.optionalKey(AppLanguage),
+  lightTone: Schema.optionalKey(LightTone),
+  reduceMotion: Schema.optionalKey(Schema.Boolean),
   favorites: Schema.optionalKey(
     Schema.Array(
       Schema.Struct({

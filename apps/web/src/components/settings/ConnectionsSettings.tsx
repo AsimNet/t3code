@@ -663,9 +663,7 @@ const PairingLinkListRow = memo(function PairingLinkListRow({
         <span className="min-w-0 flex-1">
           <span className="block truncate">{option.label}</span>
           {renderDetail ? (
-            <span className="block truncate text-[11px] text-muted-foreground">
-              {option.detail}
-            </span>
+            <span className="block truncate text-2xs text-muted-foreground">{option.detail}</span>
           ) : null}
         </span>
       </MenuItem>
@@ -675,7 +673,7 @@ const PairingLinkListRow = memo(function PairingLinkListRow({
       <span className="min-w-0 flex-1">
         <span className="block truncate">Copy code</span>
         {renderDetail ? (
-          <span className="block truncate text-[11px] text-muted-foreground">Token only</span>
+          <span className="block truncate text-2xs text-muted-foreground">Token only</span>
         ) : null}
       </span>
     </MenuItem>
@@ -773,7 +771,7 @@ const PairingLinkListRow = memo(function PairingLinkListRow({
             <AccessScopeSummary scopes={pairingLink.scopes} label="Pairing link scopes" />
           </p>
           {shareablePairingUrl === null ? (
-            <p className="text-[11px] text-muted-foreground/70">
+            <p className="text-2xs text-muted-foreground/70">
               Copy the token and pair from another client using this backend&apos;s reachable host.
             </p>
           ) : null}
@@ -936,7 +934,7 @@ const ConnectedClientListRow = memo(function ConnectedClientListRow({
             />
             <h3 className="text-sm font-medium text-foreground">{primaryLabel}</h3>
             {clientSession.current ? (
-              <span className="text-[10px] text-muted-foreground/80 rounded-md border border-border/50 bg-muted/50 px-1 py-0.5">
+              <span className="text-3xs text-muted-foreground/80 rounded-md border border-border/50 bg-muted/50 px-1 py-0.5">
                 This device
               </span>
             ) : null}
@@ -1231,7 +1229,7 @@ const AdvertisedEndpointListRow = memo(function AdvertisedEndpointListRow({
   return (
     <div className={endpointRowClassName(presentation, isAvailable)}>
       {isEndpointRail && isDefault ? (
-        <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-primary" aria-hidden />
+        <span className="absolute inset-y-2 start-0 w-1 rounded-e-full bg-primary" aria-hidden />
       ) : null}
       <div className="flex min-h-6 min-w-0 flex-col gap-2 sm:-my-0.5 sm:flex-row sm:items-center">
         <div className="flex min-w-0 items-baseline gap-3">
@@ -1247,14 +1245,14 @@ const AdvertisedEndpointListRow = memo(function AdvertisedEndpointListRow({
             </p>
           ) : null}
           {!isAvailable ? (
-            <span className="shrink-0 rounded-md border border-border/70 px-1 py-0.5 text-[10px] text-muted-foreground">
+            <span className="shrink-0 rounded-md border border-border/70 px-1 py-0.5 text-3xs text-muted-foreground">
               Setup required
             </span>
           ) : null}
         </div>
-        <div className="ml-auto flex min-h-6 shrink-0 items-center justify-end gap-2">
+        <div className="ms-auto flex min-h-6 shrink-0 items-center justify-end gap-2">
           {isDefault ? (
-            <span className="rounded-md border border-primary/30 bg-primary/10 px-1 py-0.5 text-[10px] text-primary">
+            <span className="rounded-md border border-primary/30 bg-primary/10 px-1 py-0.5 text-3xs text-primary">
               Default
             </span>
           ) : null}
@@ -1323,7 +1321,7 @@ function NetworkAccessDescription({
       {hiddenEndpointCount > 0 ? (
         <button
           type="button"
-          className="inline-flex min-w-0 max-w-full items-baseline gap-2 border-b border-dotted border-muted-foreground/60 text-left text-muted-foreground underline-offset-4 hover:border-foreground hover:text-foreground"
+          className="inline-flex min-w-0 max-w-full items-baseline gap-2 border-b border-dotted border-muted-foreground/60 text-start text-muted-foreground underline-offset-4 hover:border-foreground hover:text-foreground"
           onClick={onToggleExpanded}
           aria-expanded={expanded}
         >
@@ -2356,7 +2354,7 @@ export function ConnectionsSettings() {
         type="button"
         aria-pressed={selected}
         className={cn(
-          "group flex min-h-24 items-start gap-3 rounded-lg border p-4 text-left",
+          "group flex min-h-24 items-start gap-3 rounded-lg border p-4 text-start",
           selected ? "border-primary/50 bg-primary/5" : "border-border/60 hover:bg-muted/40",
         )}
         disabled={isAddingSavedBackend}
@@ -2411,7 +2409,7 @@ export function ConnectionsSettings() {
         </label>
       </div>
       <div>
-        <span className="mt-1 block text-[11px] text-muted-foreground">
+        <span className="mt-1 block text-2xs text-muted-foreground">
           Paste a full pairing URL here to fill both fields automatically.
         </span>
       </div>
@@ -2489,7 +2487,7 @@ export function ConnectionsSettings() {
         <div className="flex items-center justify-between gap-3 border-b border-border/60 bg-muted/30 px-3 py-2">
           <div className="min-w-0">
             <p className="text-xs font-medium text-foreground">Suggested hosts</p>
-            <p className="text-[11px] text-muted-foreground">From SSH config and known hosts</p>
+            <p className="text-2xs text-muted-foreground">From SSH config and known hosts</p>
           </div>
           <Button
             size="xs"
@@ -2848,7 +2846,7 @@ export function ConnectionsSettings() {
           <SettingsRow
             title="WSL only"
             description="Stop the Windows backend and run only the WSL backend. Useful if you develop entirely inside WSL and don't want a second backend process. T3 Code restarts when you change this."
-            className="bg-muted/20 pl-7 sm:pl-8"
+            className="bg-muted/20 ps-7 sm:ps-8"
             control={
               <Switch
                 checked={desktopWslState.wslOnly}
@@ -3335,7 +3333,7 @@ export function ConnectionsSettings() {
                       <Button
                         size="xs"
                         variant="ghost"
-                        className="h-5 gap-1 rounded-sm px-1 text-[11px] font-normal text-muted-foreground/60 hover:text-muted-foreground"
+                        className="h-5 gap-1 rounded-sm px-1 text-2xs font-normal text-muted-foreground/60 hover:text-muted-foreground"
                         aria-label="Add environment"
                       >
                         <PlusIcon className="size-3" />

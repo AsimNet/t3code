@@ -1048,14 +1048,14 @@ function OpenCommandPaletteDialog(props: {
         const disabledHint = readiness.hint;
 
         const titleTrailingContent = readiness.ready ? undefined : (
-          <span className="ml-auto">
+          <span className="ms-auto">
             <Tooltip>
               <TooltipTrigger
                 render={
                   <Button
                     variant="outline"
                     size="xs"
-                    className="h-5 rounded-[.25rem] px-1.5 text-[10px] text-warning-foreground"
+                    className="h-5 rounded-[.25rem] px-1.5 text-3xs text-warning-foreground"
                     onClick={() => {
                       openSourceControlSettings();
                     }}
@@ -2009,7 +2009,7 @@ function OpenCommandPaletteDialog(props: {
                       aria-label="Back"
                       onClick={popView}
                     >
-                      <ArrowLeftIcon />
+                      <ArrowLeftIcon className="rtl:rotate-180" />
                     </button>
                   ),
                 }

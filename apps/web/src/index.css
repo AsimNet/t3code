@@ -76,6 +76,11 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
 }
 
 :root {
+  /* Multiplier for every --text-* step, driven by the Text size setting. Text
+     scales without touching layout: rem-based spacing keeps its own rhythm. */
+  --font-scale: 1;
+  --safe-area-inset-start: max(env(safe-area-inset-left), 0px);
+  --safe-area-inset-end: max(env(safe-area-inset-right), 0px);
   --app-scrollbar-width: 6px;
   --app-scrollbar-thumb: rgb(217 217 217);
   --app-scrollbar-thumb-hover: rgb(191 191 191);
@@ -90,6 +95,11 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   --workspace-native-controls-inset: 0px;
   --workspace-titlebar-control-size: 1.75rem;
   --workspace-titlebar-control-gap: 0.75rem;
+}
+
+[dir="rtl"] {
+  --safe-area-inset-start: max(env(safe-area-inset-right), 0px);
+  --safe-area-inset-end: max(env(safe-area-inset-left), 0px);
 }
 
 .dark {
@@ -126,11 +136,26 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   --animate-status-pulse: status-pulse 2s infinite;
   --animate-status-ping: status-ping 2s infinite;
   --animate-sidebar-working-text: sidebar-working-text 3.4s infinite;
+  /* Noto Sans Arabic carries the Arabic glyphs DM Sans lacks. It sits after the
+     Latin faces so Latin text keeps DM Sans' metrics and only Arabic runs fall
+     through to it. Keep in sync with index.html's boot stack and the body rule
+     below. */
   --font-sans:
-    "DM Sans Variable", "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
-    sans-serif;
+    "DM Sans Variable", "DM Sans", "Noto Sans Arabic Variable", "Noto Sans Arabic", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-mono:
-    "SF Mono", "SFMono-Regular", "JetBrains Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    "SF Mono", "SFMono-Regular", "JetBrains Mono", "Noto Sans Arabic Variable", Consolas,
+    "Liberation Mono", Menlo, monospace;
+  /* Tailwind's default steps, re-declared so the Text size setting scales them.
+     Line-height companions stay untouched: they are unitless ratios and follow
+     the font size on their own. */
+  --text-xs: calc(0.75rem * var(--font-scale));
+  --text-sm: calc(0.875rem * var(--font-scale));
+  --text-base: calc(1rem * var(--font-scale));
+  --text-lg: calc(1.125rem * var(--font-scale));
+  --text-xl: calc(1.25rem * var(--font-scale));
+  --text-2xl: calc(1.5rem * var(--font-scale));
+  --text-3xl: calc(1.875rem * var(--font-scale));
   --color-warning-foreground: var(--warning-foreground);
   --color-warning: var(--warning);
   --color-success-foreground: var(--success-foreground);
@@ -358,6 +383,15 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
       var(--app-scrollbar-width) 100%;
   }
 
+  /* The third mask layer covers the scrollbar strip, and the scrollbar sits on
+     the left in RTL. mask-position has no logical keywords, so the flip has to
+     be spelled out. */
+  [dir="rtl"] .chat-timeline-scroll-fade,
+  [dir="rtl"] .settings-page-scroll-fade {
+    -webkit-mask-position: top, bottom, left;
+    mask-position: top, bottom, left;
+  }
+
   .workspace-titlebar-controls {
     position: absolute;
     top: var(--workspace-controls-top);
@@ -373,8 +407,8 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   }
 
   .chat-composer-horizontal-inset {
-    padding-inline-start: calc(env(safe-area-inset-left) + 0.75rem);
-    padding-inline-end: calc(env(safe-area-inset-right) + 0.75rem);
+    padding-inline-start: calc(var(--safe-area-inset-start) + 0.75rem);
+    padding-inline-end: calc(var(--safe-area-inset-end) + 0.75rem);
   }
 
   .chat-composer-glass {
@@ -760,8 +794,8 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
     }
 
     .chat-composer-horizontal-inset {
-      padding-inline-start: calc(env(safe-area-inset-left) + 1.25rem);
-      padding-inline-end: calc(env(safe-area-inset-right) + 1.25rem);
+      padding-inline-start: calc(var(--safe-area-inset-start) + 1.25rem);
+      padding-inline-end: calc(var(--safe-area-inset-end) + 1.25rem);
     }
   }
 
@@ -797,6 +831,43 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
 @utility pr-safe {
   padding-right: max(env(safe-area-inset-right), 0px);
 }
+/* Logical pair for surfaces whose edge is chosen by reading direction (a drawer
+   at the inline start is on the physical right in RTL). env() only knows
+   physical sides, so the swap happens once here rather than at each call site. */
+@utility ps-safe {
+  padding-inline-start: var(--safe-area-inset-start);
+}
+@utility pe-safe {
+  padding-inline-end: var(--safe-area-inset-end);
+}
+
+/* Content direction. The chrome follows the locale, but what is *inside* a
+   thread is whatever the user and the agent wrote, usually a mix of Arabic and
+   English. `plaintext` resolves each block from its own first strong character,
+   so an Arabic paragraph reads RTL and an English one LTR in the same
+   transcript, and `text-align: start` follows each block's own direction. */
+@utility bidi-plaintext {
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+
+/* Code is not prose. Identifiers, paths, diff markers, and terminal output have
+   to stay left-to-right even when the surrounding UI is mirrored, or the
+   reading order of every line breaks. */
+@utility force-ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Sub-xs label sizes. Font-size only, no line-height companion, so they are
+   drop-in replacements for the text-[10px]/text-[11px] arbitrary values they
+   came from and still follow the Text size setting. */
+@utility text-2xs {
+  font-size: calc(0.6875rem * var(--font-scale));
+}
+@utility text-3xs {
+  font-size: calc(0.625rem * var(--font-scale));
+}
 
 /* Grain texture for chrome surfaces that float above the body (see the
    --surface-grain note). Layered over the element's background-color, so it
@@ -819,25 +890,25 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
 :root {
   color-scheme: light;
   --radius: 0.625rem;
-  --background: var(--color-zinc-25);
+  --background: var(--tone-background, var(--color-zinc-25));
   --app-chrome-background: var(--background);
   --surface-raised: color-mix(in srgb, var(--card) 20%, transparent);
-  --foreground: var(--color-zinc-800);
-  --card: var(--color-white);
-  --card-foreground: var(--color-zinc-800);
-  --popover: var(--color-white);
-  --popover-foreground: var(--color-zinc-800);
+  --foreground: var(--tone-foreground, var(--color-zinc-800));
+  --card: var(--tone-card, var(--color-white));
+  --card-foreground: var(--foreground);
+  --popover: var(--tone-card, var(--color-white));
+  --popover-foreground: var(--foreground);
   --primary: oklch(0.488 0.217 264);
   --primary-foreground: var(--color-white);
-  --secondary: var(--color-zinc-50);
-  --secondary-foreground: var(--color-zinc-800);
-  --muted: var(--color-zinc-50);
-  --muted-foreground: var(--color-zinc-500);
-  --accent: var(--color-zinc-100);
+  --secondary: var(--tone-muted, var(--color-zinc-50));
+  --secondary-foreground: var(--foreground);
+  --muted: var(--tone-muted, var(--color-zinc-50));
+  --muted-foreground: var(--tone-muted-foreground, var(--color-zinc-500));
+  --accent: var(--tone-accent, var(--color-zinc-100));
   --accent-foreground: var(--color-zinc-900);
   --destructive: var(--color-red-500);
-  --border: var(--color-zinc-200);
-  --input: var(--color-zinc-300);
+  --border: var(--tone-border, var(--color-zinc-200));
+  --input: var(--tone-input, var(--color-zinc-300));
   --ring: oklch(0.488 0.217 264);
   --destructive-foreground: var(--color-red-700);
   --info: var(--color-blue-500);
@@ -848,13 +919,13 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   --warning-foreground: var(--color-amber-700);
   /* Keep every sidebar primitive on the same light surface hierarchy, including
      portaled mobile sheets and settings navigation outside the app sidebar. */
-  --sidebar: var(--color-zinc-50);
+  --sidebar: var(--tone-sidebar, var(--color-zinc-50));
   --sidebar-foreground: var(--foreground);
   --sidebar-muted-foreground: var(--muted-foreground);
-  --sidebar-control-surface: var(--color-zinc-100);
-  --sidebar-row-hover: var(--color-zinc-25);
-  --sidebar-row-active: var(--color-white);
-  --sidebar-row-selected: var(--color-white);
+  --sidebar-control-surface: var(--tone-control-surface, var(--color-zinc-100));
+  --sidebar-row-hover: var(--tone-row-hover, var(--color-zinc-25));
+  --sidebar-row-active: var(--tone-row-active, var(--color-white));
+  --sidebar-row-selected: var(--tone-row-active, var(--color-white));
   --sidebar-border: var(--border);
   --sidebar-stage-fade: var(--sidebar);
 
@@ -907,26 +978,63 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
    changing the color system when the beta is toggled. */
 [data-sidebar-version="v1"],
 [data-sidebar-version="v2"] {
-  --background: var(--color-zinc-25);
-  --foreground: var(--color-zinc-800);
-  --card: var(--color-white);
-  --card-foreground: var(--color-zinc-800);
-  --accent: var(--color-zinc-100);
+  --background: var(--tone-background, var(--color-zinc-25));
+  --foreground: var(--tone-foreground, var(--color-zinc-800));
+  --card: var(--tone-card, var(--color-white));
+  --card-foreground: var(--foreground);
+  --accent: var(--tone-accent, var(--color-zinc-100));
   --accent-foreground: var(--color-zinc-900);
-  --muted: var(--color-zinc-50);
-  --muted-foreground: var(--color-zinc-500);
-  --border: var(--color-zinc-200);
-  --input: var(--color-zinc-300);
-  --sidebar: var(--color-zinc-50);
-  --sidebar-foreground: var(--color-zinc-800);
-  --sidebar-muted-foreground: var(--color-zinc-500);
-  --sidebar-control-surface: var(--color-zinc-100);
-  --sidebar-row-hover: var(--color-zinc-25);
-  --sidebar-row-active: var(--color-white);
-  --sidebar-row-selected: var(--color-white);
-  --sidebar-border: var(--color-zinc-200);
+  --muted: var(--tone-muted, var(--color-zinc-50));
+  --muted-foreground: var(--tone-muted-foreground, var(--color-zinc-500));
+  --border: var(--tone-border, var(--color-zinc-200));
+  --input: var(--tone-input, var(--color-zinc-300));
+  --sidebar: var(--tone-sidebar, var(--color-zinc-50));
+  --sidebar-foreground: var(--foreground);
+  --sidebar-muted-foreground: var(--muted-foreground);
+  --sidebar-control-surface: var(--tone-control-surface, var(--color-zinc-100));
+  --sidebar-row-hover: var(--tone-row-hover, var(--color-zinc-25));
+  --sidebar-row-active: var(--tone-row-active, var(--color-white));
+  --sidebar-row-selected: var(--tone-row-active, var(--color-white));
+  --sidebar-border: var(--border);
   --sidebar-stage-fade: var(--sidebar);
   background-color: var(--sidebar);
+}
+
+/* Light-theme tone (Settings → Appearance → Light tone). Both light palettes
+   above read these primitives with the original near-white values as their
+   fallback, so `bright` needs no rules and the dark palettes — which assign
+   concrete values — are untouched. `:not(.dark)` keeps the primitives from
+   leaking if a dark rule ever starts reading them. */
+:root[data-light-tone="soft"]:not(.dark) {
+  --tone-background: oklch(96.4% 0 0);
+  --tone-card: oklch(98.4% 0 0);
+  --tone-muted: oklch(95.3% 0 0);
+  --tone-muted-foreground: oklch(50.5% 0 0);
+  --tone-accent: oklch(93.4% 0 0);
+  --tone-border: oklch(90.2% 0 0);
+  --tone-input: oklch(85.5% 0 0);
+  --tone-sidebar: oklch(94.6% 0 0);
+  --tone-control-surface: oklch(92.4% 0 0);
+  --tone-row-hover: oklch(96.4% 0 0);
+  --tone-row-active: oklch(98.4% 0 0);
+}
+
+/* Warm paper: the same hierarchy pulled toward amber so nothing on screen is a
+   pure neutral white. Foreground warms with it to keep the contrast ratio
+   comfortable rather than harsh. */
+:root[data-light-tone="paper"]:not(.dark) {
+  --tone-background: oklch(96.6% 0.011 84);
+  --tone-card: oklch(98.2% 0.008 84);
+  --tone-foreground: oklch(32.5% 0.012 66);
+  --tone-muted: oklch(95.4% 0.012 84);
+  --tone-muted-foreground: oklch(51% 0.014 72);
+  --tone-accent: oklch(93.2% 0.016 84);
+  --tone-border: oklch(89.8% 0.016 84);
+  --tone-input: oklch(85% 0.018 84);
+  --tone-sidebar: oklch(94.6% 0.014 84);
+  --tone-control-surface: oklch(92.2% 0.016 84);
+  --tone-row-hover: oklch(96.6% 0.011 84);
+  --tone-row-active: oklch(98.2% 0.008 84);
 }
 
 .dark [data-sidebar-version="v1"],
@@ -956,14 +1064,7 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
 }
 
 body {
-  font-family:
-    "DM Sans Variable",
-    "DM Sans",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    system-ui,
-    sans-serif;
+  font-family: var(--font-sans);
   margin: 0;
   padding: 0;
 }
@@ -1014,8 +1115,7 @@ body {
 
 pre,
 code {
-  font-family:
-    "SF Mono", "SFMono-Regular", "JetBrains Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-mono);
 }
 
 /* Window drag region (frameless titlebar) */
@@ -1102,6 +1202,13 @@ code {
 }
 
 /* Terminal drawer scrollbar parity with chat */
+/* xterm has no bidi support and renders a character grid, so the terminal is
+   pinned left-to-right regardless of the app's direction. */
+.thread-terminal-drawer .xterm {
+  direction: ltr;
+  text-align: left;
+}
+
 .thread-terminal-drawer .xterm .xterm-scrollable-element > .scrollbar.vertical {
   width: 6px !important;
 }
@@ -1165,34 +1272,67 @@ label:has(> select#reasoning-effort) select {
 }
 
 .chat-markdown h1 {
-  font-size: 1.25rem;
+  font-size: calc(1.25rem * var(--font-scale));
 }
 
 .chat-markdown h2 {
-  font-size: 1.125rem;
+  font-size: calc(1.125rem * var(--font-scale));
 }
 
 .chat-markdown h3 {
-  font-size: 1rem;
+  font-size: calc(1rem * var(--font-scale));
 }
 
 .chat-markdown h4,
 .chat-markdown h5,
 .chat-markdown h6 {
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--font-scale));
 }
 
 .chat-markdown h6 {
   color: var(--muted-foreground);
 }
 
+/* Per-block direction for agent output (see the bidi-plaintext utility). Applied
+   to prose blocks only: pre/code get the opposite treatment below. */
+.chat-markdown p,
+.chat-markdown li,
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3,
+.chat-markdown h4,
+.chat-markdown h5,
+.chat-markdown h6,
+.chat-markdown blockquote,
+.chat-markdown dt,
+.chat-markdown dd,
+.chat-markdown th,
+.chat-markdown td {
+  unicode-bidi: plaintext;
+}
+
+/* Code blocks stay left-to-right whatever the UI direction is. */
+.chat-markdown pre,
+.chat-markdown pre code {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Inline code sits inside prose, so it must not break the sentence it lives in:
+   `isolate` keeps its own LTR run intact while the surrounding Arabic keeps
+   flowing right-to-left around it. */
+.chat-markdown :not(pre) > code {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
 .chat-markdown ul {
-  padding-left: 1.25rem;
+  padding-inline-start: 1.25rem;
   list-style-type: disc;
 }
 
 .chat-markdown ol {
-  padding-left: 1.25rem;
+  padding-inline-start: 1.25rem;
   list-style-type: decimal;
 }
 
@@ -1252,8 +1392,8 @@ label:has(> select#reasoning-effort) select {
 }
 
 .chat-markdown blockquote {
-  border-left: 2px solid var(--border);
-  padding-left: 0.8rem;
+  border-inline-start: 2px solid var(--border);
+  padding-inline-start: 0.8rem;
   color: var(--muted-foreground);
 }
 
@@ -1262,12 +1402,12 @@ label:has(> select#reasoning-effort) select {
   border-top: 1px solid var(--border);
   padding-top: 0.75rem;
   color: var(--muted-foreground);
-  font-size: 0.75rem;
+  font-size: calc(0.75rem * var(--font-scale));
 }
 
 .chat-markdown section[data-footnotes] ol {
   margin: 0;
-  padding-left: 1.25rem;
+  padding-inline-start: 1.25rem;
 }
 
 .chat-markdown section[data-footnotes] li + li {
@@ -1282,7 +1422,7 @@ label:has(> select#reasoning-effort) select {
   justify-content: center;
   border-radius: 0.25rem;
   text-decoration: none;
-  font-size: 0.6875rem;
+  font-size: calc(0.6875rem * var(--font-scale));
   font-weight: 600;
 }
 
@@ -1292,7 +1432,7 @@ label:has(> select#reasoning-effort) select {
   background: var(--muted);
   padding: 0.1rem 0.35rem;
   color: var(--foreground);
-  font-size: 0.75rem;
+  font-size: calc(0.75rem * var(--font-scale));
 }
 
 .chat-markdown a.chat-markdown-file-link {
@@ -1323,7 +1463,7 @@ label:has(> select#reasoning-effort) select {
   border: none;
   background: transparent;
   padding: 0;
-  font-size: 0.75rem;
+  font-size: calc(0.75rem * var(--font-scale));
 }
 
 .chat-markdown pre {
@@ -1387,7 +1527,7 @@ label:has(> select#reasoning-effort) select {
   align-items: center;
   gap: 0.4rem;
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
-  font-size: 0.6875rem;
+  font-size: calc(0.6875rem * var(--font-scale));
 }
 
 .chat-markdown .chat-markdown-chrome-action {
@@ -1430,13 +1570,13 @@ label:has(> select#reasoning-effort) select {
   border-collapse: collapse;
   overflow-wrap: normal;
   word-break: normal;
-  font-size: 0.75rem;
+  font-size: calc(0.75rem * var(--font-scale));
 }
 
 .chat-markdown th,
 .chat-markdown td {
   padding: 0.45rem 0.75rem;
-  text-align: left;
+  text-align: start;
 }
 
 .chat-markdown thead th {
@@ -1496,6 +1636,46 @@ label:has(> select#reasoning-effort) select {
   }
 }
 
+/* Calm mode. `data-reduce-motion` is set from the Reduce motion setting; the
+   media query covers users who asked the OS instead. Continuously repainting
+   indicators are the target: they are the only motion on screen while an agent
+   works, and on a high-refresh display they never stop moving. Static styling
+   is left alone so nothing disappears — only the looping repaints stop. */
+@media (prefers-reduced-motion: reduce) {
+  .ultrathink-frame::before,
+  .ultrathink-chroma,
+  .ultrathink-pill,
+  .ultrathink-word,
+  [class*="animate-status-pulse"],
+  [class*="animate-status-ping"],
+  [class*="animate-sidebar-working-text"],
+  [class*="animate-skeleton"],
+  [class*="animate-pulse"] {
+    animation: none !important;
+  }
+}
+
+html[data-reduce-motion="true"] .ultrathink-frame::before,
+html[data-reduce-motion="true"] .ultrathink-chroma,
+html[data-reduce-motion="true"] .ultrathink-pill,
+html[data-reduce-motion="true"] .ultrathink-word,
+html[data-reduce-motion="true"] [class*="animate-status-pulse"],
+html[data-reduce-motion="true"] [class*="animate-status-ping"],
+html[data-reduce-motion="true"] [class*="animate-sidebar-working-text"],
+html[data-reduce-motion="true"] [class*="animate-skeleton"],
+html[data-reduce-motion="true"] [class*="animate-pulse"] {
+  animation: none !important;
+}
+
+/* View transitions and the composer hero morph are driven from JS, which reads
+   the same setting; this only covers the route-level transition the browser
+   owns. */
+html[data-reduce-motion="true"]::view-transition-group(*),
+html[data-reduce-motion="true"]::view-transition-old(*),
+html[data-reduce-motion="true"]::view-transition-new(*) {
+  animation: none;
+}
+
 @keyframes provider-update-pill-countdown {
   from {
     transform: scaleX(1);
@@ -1520,6 +1700,15 @@ label:has(> select#reasoning-effort) select {
   border-radius: 0.5rem;
   overflow: clip;
   background: color-mix(in srgb, var(--card) 92%, var(--background));
+}
+
+/* Code content stays left-to-right in an RTL locale: gutters, line numbers, and
+   +/- markers all read from the left, and mirroring them would reverse every
+   line. The panel chrome around these surfaces still mirrors. */
+.diff-render-surface,
+.file-preview-virtualizer {
+  direction: ltr;
+  text-align: left;
 }
 
 @keyframes ultrathink-rainbow {

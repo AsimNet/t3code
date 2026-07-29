@@ -31,10 +31,15 @@ import {
   squashAtomCommandFailure,
 } from "@t3tools/client-runtime/state/runtime";
 import {
+  type AppLanguage,
   DEFAULT_ENVIRONMENT_IDENTIFICATION_MODE,
   DEFAULT_UNIFIED_SETTINGS,
   type EnvironmentIdentificationMode,
+  FONT_SCALE_STEP,
+  type LightTone,
+  MAX_FONT_SCALE,
   MAX_GLASS_OPACITY,
+  MIN_FONT_SCALE,
   MIN_GLASS_OPACITY,
 } from "@t3tools/contracts/settings";
 import {
@@ -64,6 +69,7 @@ import {
 import { isElectron } from "../../env";
 import { buildHostedChannelSelectionUrl, type HostedAppChannel } from "../../hostedPairing";
 import { useTheme } from "../../hooks/useTheme";
+import { useT } from "../../i18n";
 import { usePrimarySettings, useUpdatePrimarySettings } from "../../hooks/useSettings";
 import { useThreadActions } from "../../hooks/useThreadActions";
 import { useDesktopUpdateState } from "../../state/desktopUpdate";
@@ -319,11 +325,11 @@ function ProviderLastChecked({ lastCheckedAt }: { lastCheckedAt: string | null }
   }
 
   if (lastCheckedRelative.status === "invalid") {
-    return <span className="text-[11px] text-muted-foreground/50">Checked unavailable</span>;
+    return <span className="text-2xs text-muted-foreground/50">Checked unavailable</span>;
   }
 
   return (
-    <span className="text-[11px] text-muted-foreground/60">
+    <span className="text-2xs text-muted-foreground/60">
       {lastCheckedRelative.suffix ? (
         <>
           Checked <span className="font-mono tabular-nums">{lastCheckedRelative.value}</span>{" "}
@@ -340,7 +346,7 @@ function AboutVersionTitle() {
   return (
     <span className="inline-flex items-center gap-2">
       <span>Version</span>
-      <code className="text-[11px] font-medium text-muted-foreground">{APP_VERSION}</code>
+      <code className="text-2xs font-medium text-muted-foreground">{APP_VERSION}</code>
     </span>
   );
 }
@@ -569,6 +575,13 @@ export function useSettingsRestore(onRestored?: () => void) {
   const changedSettingLabels = useMemo(
     () => [
       ...(theme !== "system" ? ["Theme"] : []),
+      ...(settings.language !== DEFAULT_UNIFIED_SETTINGS.language ? ["Language"] : []),
+      ...(settings.lightTone !== DEFAULT_UNIFIED_SETTINGS.lightTone ? ["Light tone"] : []),
+      ...(settings.fontScale !== DEFAULT_UNIFIED_SETTINGS.fontScale ? ["Text size"] : []),
+      ...(settings.chatAutoScroll !== DEFAULT_UNIFIED_SETTINGS.chatAutoScroll
+        ? ["Follow agent output"]
+        : []),
+      ...(settings.reduceMotion !== DEFAULT_UNIFIED_SETTINGS.reduceMotion ? ["Reduce motion"] : []),
       ...(settings.glassOpacity !== DEFAULT_UNIFIED_SETTINGS.glassOpacity ? ["Glass opacity"] : []),
       ...(settings.environmentIdentificationMode !==
       DEFAULT_UNIFIED_SETTINGS.environmentIdentificationMode
@@ -621,8 +634,13 @@ export function useSettingsRestore(onRestored?: () => void) {
       isTextGenerationModelDirty,
       isBackgroundActivityDirty,
       settings.autoOpenPlanSidebar,
+      settings.chatAutoScroll,
       settings.confirmThreadArchive,
       settings.confirmThreadDelete,
+      settings.fontScale,
+      settings.language,
+      settings.lightTone,
+      settings.reduceMotion,
       settings.addProjectBaseDirectory,
       settings.defaultThreadEnvMode,
       settings.newWorktreesStartFromOrigin,
@@ -651,6 +669,11 @@ export function useSettingsRestore(onRestored?: () => void) {
 
     setTheme("system");
     updateSettings({
+      language: DEFAULT_UNIFIED_SETTINGS.language,
+      lightTone: DEFAULT_UNIFIED_SETTINGS.lightTone,
+      fontScale: DEFAULT_UNIFIED_SETTINGS.fontScale,
+      chatAutoScroll: DEFAULT_UNIFIED_SETTINGS.chatAutoScroll,
+      reduceMotion: DEFAULT_UNIFIED_SETTINGS.reduceMotion,
       timestampFormat: DEFAULT_UNIFIED_SETTINGS.timestampFormat,
       wordWrap: DEFAULT_UNIFIED_SETTINGS.wordWrap,
       diffIgnoreWhitespace: DEFAULT_UNIFIED_SETTINGS.diffIgnoreWhitespace,
@@ -910,7 +933,7 @@ function BackgroundActivityAdvancedDialog({
               {BACKGROUND_ACTIVITY_BOOLEAN_OVERRIDES.map(({ key, label }) => (
                 <label
                   key={key}
-                  className="flex items-center justify-between gap-3 border-b px-4 py-3 last:border-b-0 sm:border-r sm:even:border-r-0"
+                  className="flex items-center justify-between gap-3 border-b px-4 py-3 last:border-b-0 sm:border-e sm:even:border-e-0"
                 >
                   <span className="text-sm font-medium">{label}</span>
                   <Switch
@@ -948,6 +971,7 @@ function BackgroundActivityAdvancedDialog({
 }
 
 export function AppearanceSettingsPanel() {
+  const t = useT();
   const { theme, setTheme } = useTheme();
   const settings = usePrimarySettings();
   const updateSettings = useUpdatePrimarySettings();
@@ -960,13 +984,70 @@ export function AppearanceSettingsPanel() {
     "--glass-slider-progress": `${glassOpacityRatio * 100}%`,
     "--glass-slider-fill-offset": `${0.5 - glassOpacityRatio}rem`,
   } as CSSProperties;
+  const fontScaleRatio = (settings.fontScale - MIN_FONT_SCALE) / (MAX_FONT_SCALE - MIN_FONT_SCALE);
+  const fontScaleSliderStyle = {
+    "--glass-slider-progress": `${fontScaleRatio * 100}%`,
+    "--glass-slider-fill-offset": `${0.5 - fontScaleRatio}rem`,
+  } as CSSProperties;
+  const themeLabels: Record<(typeof THEME_OPTIONS)[number]["value"], string> = {
+    system: t("settings.appearance.theme.system"),
+    light: t("settings.appearance.theme.light"),
+    dark: t("settings.appearance.theme.dark"),
+  };
+  const lightToneLabels: Record<LightTone, string> = {
+    bright: t("settings.appearance.lightTone.bright"),
+    soft: t("settings.appearance.lightTone.soft"),
+    paper: t("settings.appearance.lightTone.paper"),
+  };
+  const languageLabels: Record<AppLanguage, string> = {
+    system: t("common.system"),
+    en: t("settings.appearance.language.english"),
+    ar: t("settings.appearance.language.arabic"),
+  };
 
   return (
     <SettingsPageContainer>
-      <SettingsSection title="Appearance">
+      <SettingsSection title={t("settings.appearance.section")}>
         <SettingsRow
-          title="Theme"
-          description="Choose how T3 Code looks across the app."
+          title={t("settings.appearance.language.title")}
+          description={t("settings.appearance.language.description")}
+          resetAction={
+            settings.language !== DEFAULT_UNIFIED_SETTINGS.language ? (
+              <SettingResetButton
+                label="language"
+                onClick={() => updateSettings({ language: DEFAULT_UNIFIED_SETTINGS.language })}
+              />
+            ) : null
+          }
+          control={
+            <Select
+              value={settings.language}
+              onValueChange={(value) => {
+                if (value === "system" || value === "en" || value === "ar") {
+                  updateSettings({ language: value });
+                }
+              }}
+            >
+              <SelectTrigger
+                className="w-full sm:w-40"
+                aria-label={t("settings.appearance.language.title")}
+              >
+                <SelectValue>{languageLabels[settings.language]}</SelectValue>
+              </SelectTrigger>
+              <SelectPopup align="end" alignItemWithTrigger={false}>
+                {Object.entries(languageLabels).map(([value, label]) => (
+                  <SelectItem hideIndicator key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectPopup>
+            </Select>
+          }
+        />
+
+        <SettingsRow
+          title={t("settings.appearance.theme.title")}
+          description={t("settings.appearance.theme.description")}
           resetAction={
             theme !== "system" ? (
               <SettingResetButton label="theme" onClick={() => setTheme("system")} />
@@ -981,15 +1062,16 @@ export function AppearanceSettingsPanel() {
                 }
               }}
             >
-              <SelectTrigger className="w-full sm:w-40" aria-label="Theme preference">
-                <SelectValue>
-                  {THEME_OPTIONS.find((option) => option.value === theme)?.label ?? "System"}
-                </SelectValue>
+              <SelectTrigger
+                className="w-full sm:w-40"
+                aria-label={t("settings.appearance.theme.title")}
+              >
+                <SelectValue>{themeLabels[theme]}</SelectValue>
               </SelectTrigger>
               <SelectPopup align="end" alignItemWithTrigger={false}>
                 {THEME_OPTIONS.map((option) => (
                   <SelectItem hideIndicator key={option.value} value={option.value}>
-                    {option.label}
+                    {themeLabels[option.value]}
                   </SelectItem>
                 ))}
               </SelectPopup>
@@ -998,8 +1080,133 @@ export function AppearanceSettingsPanel() {
         />
 
         <SettingsRow
-          title="Glass opacity"
-          description="Control how transparent glass surfaces are. Higher values make menus, dialogs, and the composer more solid."
+          title={t("settings.appearance.lightTone.title")}
+          description={t("settings.appearance.lightTone.description")}
+          resetAction={
+            settings.lightTone !== DEFAULT_UNIFIED_SETTINGS.lightTone ? (
+              <SettingResetButton
+                label="light tone"
+                onClick={() => updateSettings({ lightTone: DEFAULT_UNIFIED_SETTINGS.lightTone })}
+              />
+            ) : null
+          }
+          control={
+            <Select
+              value={settings.lightTone}
+              onValueChange={(value) => {
+                if (value === "bright" || value === "soft" || value === "paper") {
+                  updateSettings({ lightTone: value });
+                }
+              }}
+            >
+              <SelectTrigger
+                className="w-full sm:w-40"
+                aria-label={t("settings.appearance.lightTone.title")}
+              >
+                <SelectValue>{lightToneLabels[settings.lightTone]}</SelectValue>
+              </SelectTrigger>
+              <SelectPopup align="end" alignItemWithTrigger={false}>
+                {Object.entries(lightToneLabels).map(([value, label]) => (
+                  <SelectItem hideIndicator key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectPopup>
+            </Select>
+          }
+        />
+
+        <SettingsRow
+          title={t("settings.appearance.fontScale.title")}
+          description={t("settings.appearance.fontScale.description")}
+          resetAction={
+            settings.fontScale !== DEFAULT_UNIFIED_SETTINGS.fontScale ? (
+              <SettingResetButton
+                label="text size"
+                onClick={() => updateSettings({ fontScale: DEFAULT_UNIFIED_SETTINGS.fontScale })}
+              />
+            ) : null
+          }
+          control={
+            <div className="flex w-full items-center gap-3 sm:w-52">
+              <output
+                className="min-w-12 rounded-md bg-muted px-2 py-1 text-center font-mono text-xs font-medium tabular-nums text-foreground"
+                htmlFor="font-scale"
+              >
+                {settings.fontScale}%
+              </output>
+              <input
+                aria-label={t("settings.appearance.fontScale.title")}
+                className="glass-opacity-slider min-w-0 flex-1"
+                id="font-scale"
+                max={MAX_FONT_SCALE}
+                min={MIN_FONT_SCALE}
+                onChange={(event) => {
+                  const fontScale = Number(event.currentTarget.value);
+                  if (
+                    Number.isInteger(fontScale) &&
+                    fontScale >= MIN_FONT_SCALE &&
+                    fontScale <= MAX_FONT_SCALE
+                  ) {
+                    updateSettings({ fontScale });
+                  }
+                }}
+                step={FONT_SCALE_STEP}
+                style={fontScaleSliderStyle}
+                type="range"
+                value={settings.fontScale}
+              />
+            </div>
+          }
+        />
+
+        <SettingsRow
+          title={t("settings.appearance.chatAutoScroll.title")}
+          description={t("settings.appearance.chatAutoScroll.description")}
+          resetAction={
+            settings.chatAutoScroll !== DEFAULT_UNIFIED_SETTINGS.chatAutoScroll ? (
+              <SettingResetButton
+                label="follow agent output"
+                onClick={() =>
+                  updateSettings({ chatAutoScroll: DEFAULT_UNIFIED_SETTINGS.chatAutoScroll })
+                }
+              />
+            ) : null
+          }
+          control={
+            <Switch
+              checked={settings.chatAutoScroll}
+              onCheckedChange={(checked) => updateSettings({ chatAutoScroll: Boolean(checked) })}
+              aria-label={t("settings.appearance.chatAutoScroll.title")}
+            />
+          }
+        />
+
+        <SettingsRow
+          title={t("settings.appearance.reduceMotion.title")}
+          description={t("settings.appearance.reduceMotion.description")}
+          resetAction={
+            settings.reduceMotion !== DEFAULT_UNIFIED_SETTINGS.reduceMotion ? (
+              <SettingResetButton
+                label="reduce motion"
+                onClick={() =>
+                  updateSettings({ reduceMotion: DEFAULT_UNIFIED_SETTINGS.reduceMotion })
+                }
+              />
+            ) : null
+          }
+          control={
+            <Switch
+              checked={settings.reduceMotion}
+              onCheckedChange={(checked) => updateSettings({ reduceMotion: Boolean(checked) })}
+              aria-label={t("settings.appearance.reduceMotion.title")}
+            />
+          }
+        />
+
+        <SettingsRow
+          title={t("settings.appearance.glassOpacity.title")}
+          description={t("settings.appearance.glassOpacity.description")}
           resetAction={
             settings.glassOpacity !== DEFAULT_UNIFIED_SETTINGS.glassOpacity ? (
               <SettingResetButton
@@ -1045,8 +1252,8 @@ export function AppearanceSettingsPanel() {
 
         {showEnvironmentIdentification ? (
           <SettingsRow
-            title="Environment identification"
-            description="Choose how Dev and Nightly environments are identified."
+            title={t("settings.appearance.environmentIdentification.title")}
+            description={t("settings.appearance.environmentIdentification.description")}
             resetAction={
               settings.environmentIdentificationMode !== DEFAULT_ENVIRONMENT_IDENTIFICATION_MODE ? (
                 <SettingResetButton
@@ -1086,8 +1293,8 @@ export function AppearanceSettingsPanel() {
         ) : null}
 
         <SettingsRow
-          title="Word wrap"
-          description="Wrap long lines in code blocks, tables, diffs, and file previews by default."
+          title={t("settings.appearance.wordWrap.title")}
+          description={t("settings.appearance.wordWrap.description")}
           resetAction={
             settings.wordWrap !== DEFAULT_UNIFIED_SETTINGS.wordWrap ? (
               <SettingResetButton
@@ -1482,7 +1689,7 @@ export function GeneralSettingsPanel() {
 
         {settings.defaultThreadEnvMode === "worktree" ? (
           <SettingsRow
-            className="bg-muted/20 sm:pl-9"
+            className="bg-muted/20 sm:ps-9"
             title="Start from origin"
             description="Creates the worktree from the latest matching branch on origin instead of your local branch."
             resetAction={

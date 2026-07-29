@@ -166,7 +166,9 @@ import {
 import { newDraftId, newMessageId, newThreadId } from "~/lib/utils";
 import { getProviderModelCapabilities, resolveSelectableProvider } from "../providerModels";
 import { NO_PROVIDER_MODEL_SELECTION } from "../providerInstances";
-import { useClientSettings, useEnvironmentSettings } from "../hooks/useSettings";
+import { getClientSettings, useClientSettings, useEnvironmentSettings } from "../hooks/useSettings";
+import { prefersReducedMotion } from "../appearance";
+import { useT } from "../i18n";
 import { useNowMinute } from "../hooks/useNowMinute";
 import { useNewThreadHandler } from "../hooks/useHandleNewThread";
 import { resolveAppModelSelectionForInstance } from "../modelSelection";
@@ -333,9 +335,7 @@ function useDraftHeroLayoutTransition(isDraftHeroState: boolean) {
     const transitionGroup = transitionGroupRef.current;
     const nextComposerRect = composerAnchorRef.current?.getBoundingClientRect() ?? null;
     const stateChanged = previousStateRef.current !== isDraftHeroState;
-    const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = prefersReducedMotion(getClientSettings().reduceMotion);
     const mobileComposerTransitionActive =
       typeof document !== "undefined" &&
       document.documentElement.dataset.mobileComposerRouteTransition === "true";
@@ -346,7 +346,7 @@ function useDraftHeroLayoutTransition(isDraftHeroState: boolean) {
     const previousComposerRect = previousComposerRectRef.current;
     if (
       stateChanged &&
-      !prefersReducedMotion &&
+      !reducedMotion &&
       !mobileComposerTransitionActive &&
       transitionGroup &&
       previousComposerRect &&
@@ -3435,6 +3435,19 @@ function ChatViewContent(props: ChatViewProps) {
   const showScrollDebouncer = useRef(
     new Debouncer(() => setShowScrollToBottom(true), { wait: 150 }),
   );
+  const t = useT();
+  const chatAutoScroll = useClientSettings((settings) => settings.chatAutoScroll);
+  const reduceMotionSetting = useClientSettings((settings) => settings.reduceMotion);
+  const timelineReduceMotion = prefersReducedMotion(reduceMotionSetting);
+  // The scroll callbacks below are deliberately stable (empty dependency lists,
+  // refs only) so changing a setting never re-creates them mid-stream; these
+  // mirrors are what let those callbacks read the current values.
+  const chatAutoScrollRef = useRef(chatAutoScroll);
+  const timelineReduceMotionRef = useRef(timelineReduceMotion);
+  useEffect(() => {
+    chatAutoScrollRef.current = chatAutoScroll;
+    timelineReduceMotionRef.current = timelineReduceMotion;
+  }, [chatAutoScroll, timelineReduceMotion]);
   const timelineScrollModeRef = useRef<TimelineScrollMode>("following-end");
   const pendingTimelineAnchorRef = useRef<MessageId | null>(null);
   const positionedTimelineAnchorRef = useRef<MessageId | null>(null);
@@ -3603,7 +3616,7 @@ function ChatViewContent(props: ChatViewProps) {
         scrollNode.addEventListener("scrollend", finishAnimatedPositioning, { once: true });
         void list.scrollToIndex({
           index: anchorIndex,
-          animated: true,
+          animated: !timelineReduceMotionRef.current,
           viewPosition: 0,
           viewOffset: CHAT_LIST_ANCHOR_OFFSET,
         });
@@ -3654,8 +3667,13 @@ function ChatViewContent(props: ChatViewProps) {
   }, []);
 
   const onIsAtEndChange = useCallback((isAtEnd: boolean) => {
+    // Leaving the live edge while live-follow owns the scroll position is the
+    // list settling, not the reader navigating, so the pill stays hidden. With
+    // follow-output off nothing is chasing the edge, and falling behind is
+    // exactly when the pill has to appear.
     if (
       !isAtEnd &&
+      chatAutoScrollRef.current &&
       liveFollowUserScrollGenerationRef.current === anchorUserScrollGenerationRef.current
     ) {
       showScrollDebouncer.current.cancel();
@@ -3676,8 +3694,16 @@ function ChatViewContent(props: ChatViewProps) {
     }
   }, []);
 
+  // Live-follow. This runs on every timeline change, i.e. once per streamed
+  // chunk, so it is the scrolling a reader actually feels. With the setting off
+  // the transcript holds still and the scroll-to-end pill takes over; the
+  // one-time anchor positioning after a send is unaffected because that lives in
+  // onTimelineAnchorReady.
   useEffect(() => {
     if (!activeThread?.id) {
+      return;
+    }
+    if (!chatAutoScroll) {
       return;
     }
     if (liveFollowUserScrollGenerationRef.current !== anchorUserScrollGenerationRef.current) {
@@ -3737,6 +3763,7 @@ function ChatViewContent(props: ChatViewProps) {
     };
   }, [
     activeThread?.id,
+    chatAutoScroll,
     timelineEntries,
     getActiveTimelineTurnMetrics,
     timelineRealContentOverflowsViewport,
@@ -5677,7 +5704,10 @@ function ChatViewContent(props: ChatViewProps) {
                     !inlineRightPanelOwnsTitleBar &&
                     "wco:pr-[var(--workspace-native-controls-inset)]",
                 )
-              : "workspace-topbar pl-[calc(env(safe-area-inset-left)+0.75rem)] pr-[calc(env(safe-area-inset-right)+0.75rem)] sm:pl-[calc(env(safe-area-inset-left)+1.25rem)] sm:pr-[calc(env(safe-area-inset-right)+1.25rem)]",
+              : // --safe-area-inset-start/end resolve to the physical side that
+                // matches the reading direction, so the notch inset lands on the
+                // right edge in RTL instead of following the LTR assumption.
+                "workspace-topbar ps-[calc(var(--safe-area-inset-start)+0.75rem)] pe-[calc(var(--safe-area-inset-end)+0.75rem)] sm:ps-[calc(var(--safe-area-inset-start)+1.25rem)] sm:pe-[calc(var(--safe-area-inset-end)+1.25rem)]",
             COLLAPSED_SIDEBAR_TITLEBAR_INSET_CLASS,
           )}
         >
@@ -5758,6 +5788,8 @@ function ChatViewContent(props: ChatViewProps) {
                 onManualNavigation={cancelTimelineLiveFollowForUserNavigation}
                 hideEmptyPlaceholder={isDraftHeroState || threadDetailLoading}
                 topFadeEnabled={!hasTimelineTopBanner}
+                autoScrollEnabled={chatAutoScroll}
+                reduceMotion={timelineReduceMotion}
               />
 
               {/* scroll to end pill — shown when user has scrolled away from the live edge */}
@@ -5768,13 +5800,13 @@ function ChatViewContent(props: ChatViewProps) {
                 >
                   <button
                     type="button"
-                    aria-label="Scroll to end"
-                    title="Scroll to end"
-                    onClick={() => scrollToEnd(true)}
+                    aria-label={t("chat.scrollToEnd")}
+                    title={t("chat.scrollToEnd")}
+                    onClick={() => scrollToEnd(!timelineReduceMotion)}
                     className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-3 py-1 text-muted-foreground text-xs shadow-sm transition-colors hover:border-border hover:text-foreground hover:cursor-pointer"
                   >
                     <ChevronDownIcon className="size-3.5" />
-                    Scroll to end
+                    {t("chat.scrollToEnd")}
                   </button>
                 </div>
               )}

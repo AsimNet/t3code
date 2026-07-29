@@ -275,7 +275,7 @@ export const OpenInPicker = memo(function OpenInPicker({
           className={
             compact
               ? "sr-only"
-              : "sr-only @3xl/header-actions:not-sr-only @3xl/header-actions:ml-0.5"
+              : "sr-only @3xl/header-actions:not-sr-only @3xl/header-actions:ms-0.5"
           }
         >
           Open
