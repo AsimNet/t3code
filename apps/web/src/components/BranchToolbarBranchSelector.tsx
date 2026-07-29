@@ -754,7 +754,9 @@ export function BranchToolbarBranchSelector({
           </ComboboxTrigger>
         </span>
       </div>
-      <ComboboxPopup align="end" side="top" className="flex w-80 flex-col">
+      {/* Git refs are identifiers, so the whole picker reads left-to-right: the
+          search field, the current/default badges, and the ref names together. */}
+      <ComboboxPopup align="end" side="top" dir="ltr" className="flex w-80 flex-col">
         <div className="shrink-0 px-3 pt-2.5">
           <div className="relative -translate-y-px border-b border-border/70 pb-1.5 transition-colors focus-within:border-ring">
             <SearchIcon

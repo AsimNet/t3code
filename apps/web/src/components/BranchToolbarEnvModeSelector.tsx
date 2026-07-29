@@ -94,7 +94,8 @@ export const BranchToolbarEnvModeSelector = memo(function BranchToolbarEnvModeSe
         )}
         <SelectValue />
       </SelectTrigger>
-      <SelectPopup>
+      {/* Pinned left-to-right: these labels are English. */}
+      <SelectPopup dir="ltr">
         <SelectGroup>
           <SelectGroupLabel>Workspace</SelectGroupLabel>
           <SelectItem value="local">

@@ -343,7 +343,11 @@ function ProviderLastChecked({ lastCheckedAt }: { lastCheckedAt: string | null }
   }
 
   if (lastCheckedRelative.status === "invalid") {
-    return <span className="text-2xs text-muted-foreground/50">Checked unavailable</span>;
+    return (
+      <span className="text-2xs text-muted-foreground/50">
+        {t("settings.providers.lastChecked.unavailable")}
+      </span>
+    );
   }
 
   return (
@@ -1336,7 +1340,7 @@ export function AppearanceSettingsPanel() {
                 {settings.glassOpacity}%
               </output>
               <input
-                aria-label="Glass opacity"
+                aria-label={t("settings.appearance.glassOpacity.title")}
                 className="glass-opacity-slider min-w-0 flex-1"
                 id="glass-opacity"
                 max={MAX_GLASS_OPACITY}
@@ -1385,7 +1389,10 @@ export function AppearanceSettingsPanel() {
                   }
                 }}
               >
-                <SelectTrigger className="w-full sm:w-40" aria-label="Environment identification">
+                <SelectTrigger
+                  className="w-full sm:w-40"
+                  aria-label={t("settings.appearance.environmentIdentification.title")}
+                >
                   <SelectValue>
                     {environmentIdentificationLabels[settings.environmentIdentificationMode]}
                   </SelectValue>
@@ -1421,7 +1428,7 @@ export function AppearanceSettingsPanel() {
             <Switch
               checked={settings.wordWrap}
               onCheckedChange={(checked) => updateSettings({ wordWrap: Boolean(checked) })}
-              aria-label="Wrap code, tables, diffs, and file previews by default"
+              aria-label={t("settings.appearance.wordWrap.description")}
             />
           }
         />
@@ -1490,7 +1497,7 @@ export function GeneralSettingsPanel() {
     <SettingsPageContainer>
       <SettingsSection title={t("settings.general.section")}>
         <SettingsRow
-          title="Project Grouping"
+          title={t("settings.general.projectGrouping.title")}
           description={t("settings.general.projectGrouping.description")}
           resetAction={
             settings.sidebarProjectGroupingMode !==
@@ -1520,13 +1527,13 @@ export function GeneralSettingsPanel() {
                   ),
                 });
               }}
-              aria-label="Project Grouping"
+              aria-label={t("settings.general.projectGrouping.title")}
             />
           }
         />
 
         <SettingsRow
-          title="Time format"
+          title={t("settings.general.timeFormat.title")}
           description={t("settings.general.timeFormat.description")}
           resetAction={
             settings.timestampFormat !== DEFAULT_UNIFIED_SETTINGS.timestampFormat ? (
@@ -1597,7 +1604,7 @@ export function GeneralSettingsPanel() {
         />
 
         <SettingsRow
-          title="Assistant output"
+          title={t("settings.general.assistantOutput.title")}
           description={t("settings.general.assistantOutput.description")}
           resetAction={
             settings.enableAssistantStreaming !==
@@ -1624,7 +1631,7 @@ export function GeneralSettingsPanel() {
         />
 
         <SettingsRow
-          title="Provider update checks"
+          title={t("settings.general.providerUpdateChecks.title")}
           description={t("settings.general.providerUpdateChecks.description")}
           resetAction={
             settings.enableProviderUpdateChecks !==
@@ -1737,7 +1744,7 @@ export function GeneralSettingsPanel() {
         />
 
         <SettingsRow
-          title="Auto-open task panel"
+          title={t("settings.general.autoOpenTaskPanel.title")}
           description={t("settings.general.autoOpenTaskPanel.description")}
           resetAction={
             settings.autoOpenPlanSidebar !== DEFAULT_UNIFIED_SETTINGS.autoOpenPlanSidebar ? (
@@ -1872,7 +1879,7 @@ export function GeneralSettingsPanel() {
         />
 
         <SettingsRow
-          title="Archive confirmation"
+          title={t("settings.general.archiveConfirmation.title")}
           description={t("settings.general.archiveConfirmation.description")}
           resetAction={
             settings.confirmThreadArchive !== DEFAULT_UNIFIED_SETTINGS.confirmThreadArchive ? (
@@ -1898,7 +1905,7 @@ export function GeneralSettingsPanel() {
         />
 
         <SettingsRow
-          title="Delete confirmation"
+          title={t("settings.general.deleteConfirmation.title")}
           description={t("settings.general.deleteConfirmation.description")}
           resetAction={
             settings.confirmThreadDelete !== DEFAULT_UNIFIED_SETTINGS.confirmThreadDelete ? (
@@ -1924,7 +1931,7 @@ export function GeneralSettingsPanel() {
         />
 
         <SettingsRow
-          title="Text generation model"
+          title={t("settings.general.textGenerationModel.title")}
           description={t("settings.general.textGenerationModel.description")}
           resetAction={
             isTextGenerationModelDirty ? (
@@ -2004,7 +2011,7 @@ export function GeneralSettingsPanel() {
         ) : (
           <SettingsRow
             title={<AboutVersionTitle />}
-            description="Current version of the application."
+            description={t("settings.general.about.currentVersion")}
           />
         )}
         <SettingsRow
@@ -2323,7 +2330,7 @@ export function ProviderSettingsPanel() {
   return (
     <SettingsPageContainer>
       <SettingsSection
-        title="Providers"
+        title={t("settings.providers.section")}
         headerAction={
           <div className="flex items-center gap-1.5">
             <ProviderLastChecked lastCheckedAt={lastCheckedAt} />
@@ -2335,13 +2342,13 @@ export function ProviderSettingsPanel() {
                     variant="ghost"
                     className="size-5 rounded-sm p-0 text-muted-foreground hover:text-foreground"
                     onClick={() => setIsAddInstanceDialogOpen(true)}
-                    aria-label="Add provider instance"
+                    aria-label={t("settings.providers.addInstance")}
                   >
                     <PlusIcon className="size-3" />
                   </Button>
                 }
               />
-              <TooltipPopup side="top">Add provider instance</TooltipPopup>
+              <TooltipPopup side="top">{t("settings.providers.addInstance")}</TooltipPopup>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger
@@ -2352,7 +2359,7 @@ export function ProviderSettingsPanel() {
                     className="size-5 rounded-sm p-0 text-muted-foreground hover:text-foreground"
                     disabled={isRefreshingProviders}
                     onClick={() => void refreshProviders()}
-                    aria-label="Refresh provider status"
+                    aria-label={t("settings.providers.refreshStatus")}
                   >
                     {isRefreshingProviders ? (
                       <LoaderIcon className="size-3 animate-spin" />
@@ -2362,7 +2369,7 @@ export function ProviderSettingsPanel() {
                   </Button>
                 }
               />
-              <TooltipPopup side="top">Refresh provider status</TooltipPopup>
+              <TooltipPopup side="top">{t("settings.providers.refreshStatus")}</TooltipPopup>
             </Tooltip>
           </div>
         }
@@ -2378,7 +2385,7 @@ export function ProviderSettingsPanel() {
               </PolicyTooltip>
             </span>
           }
-          description="Refresh provider availability, versions, auth state, and model metadata in the background. Set this to 0 seconds to rely on manual refreshes."
+          description={t("settings.providers.healthInterval.description")}
           resetAction={
             providerHealthRefreshIntervalSeconds !== defaultProviderHealthRefreshIntervalSeconds ? (
               <SettingResetButton
@@ -2420,12 +2427,18 @@ export function ProviderSettingsPanel() {
                 }
               >
                 <NumberFieldGroup>
-                  <NumberFieldDecrement aria-label="Decrease provider health check interval" />
-                  <NumberFieldInput aria-label="Provider health check interval in seconds" />
-                  <NumberFieldIncrement aria-label="Increase provider health check interval" />
+                  <NumberFieldDecrement
+                    aria-label={t("settings.providers.healthInterval.decrease")}
+                  />
+                  <NumberFieldInput aria-label={t("settings.providers.healthInterval.input")} />
+                  <NumberFieldIncrement
+                    aria-label={t("settings.providers.healthInterval.increase")}
+                  />
                 </NumberFieldGroup>
               </NumberField>
-              <span className="text-xs text-muted-foreground">seconds</span>
+              <span className="text-xs text-muted-foreground">
+                {t("settings.providers.healthInterval.seconds")}
+              </span>
             </div>
           }
         />
@@ -2652,7 +2665,7 @@ export function ArchivedThreadsPanel() {
   return (
     <SettingsPageContainer>
       {archivedGroups.length === 0 ? (
-        <SettingsSection title="Archived threads">
+        <SettingsSection title={t("settings.archived.section")}>
           <SettingsRow
             title={
               <span className="inline-flex items-center gap-2">
@@ -2748,7 +2761,7 @@ export function ArchivedThreadsPanel() {
                     }}
                   >
                     <ArchiveX className="size-3.5" />
-                    <span>Unarchive</span>
+                    <span>{t("settings.archived.unarchive")}</span>
                   </Button>
                 }
               />
