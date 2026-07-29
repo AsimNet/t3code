@@ -1488,10 +1488,10 @@ export function GeneralSettingsPanel() {
 
   return (
     <SettingsPageContainer>
-      <SettingsSection title="General">
+      <SettingsSection title={t("settings.general.section")}>
         <SettingsRow
           title="Project Grouping"
-          description="Combine matching repositories across environments."
+          description={t("settings.general.projectGrouping.description")}
           resetAction={
             settings.sidebarProjectGroupingMode !==
             DEFAULT_UNIFIED_SETTINGS.sidebarProjectGroupingMode ? (
@@ -1527,7 +1527,7 @@ export function GeneralSettingsPanel() {
 
         <SettingsRow
           title="Time format"
-          description="System default follows your browser or OS clock preference."
+          description={t("settings.general.timeFormat.description")}
           resetAction={
             settings.timestampFormat !== DEFAULT_UNIFIED_SETTINGS.timestampFormat ? (
               <SettingResetButton
@@ -1549,7 +1549,10 @@ export function GeneralSettingsPanel() {
                 }
               }}
             >
-              <SelectTrigger className="w-full sm:w-40" aria-label="Timestamp format">
+              <SelectTrigger
+                className="w-full sm:w-40"
+                aria-label={t("settings.general.timeFormat.ariaLabel")}
+              >
                 <SelectValue>{timestampFormatLabels(t)[settings.timestampFormat]}</SelectValue>
               </SelectTrigger>
               <SelectPopup align="end" alignItemWithTrigger={false}>
@@ -1568,8 +1571,8 @@ export function GeneralSettingsPanel() {
         />
 
         <SettingsRow
-          title="Hide whitespace changes"
-          description="Set whether the diff panel ignores whitespace-only edits by default."
+          title={t("settings.general.diffWhitespace.title")}
+          description={t("settings.general.diffWhitespace.description")}
           resetAction={
             settings.diffIgnoreWhitespace !== DEFAULT_UNIFIED_SETTINGS.diffIgnoreWhitespace ? (
               <SettingResetButton
@@ -1588,14 +1591,14 @@ export function GeneralSettingsPanel() {
               onCheckedChange={(checked) =>
                 updateSettings({ diffIgnoreWhitespace: Boolean(checked) })
               }
-              aria-label="Hide whitespace changes by default"
+              aria-label={t("settings.general.diffWhitespace.ariaLabel")}
             />
           }
         />
 
         <SettingsRow
           title="Assistant output"
-          description="Show token-by-token output while a response is in progress."
+          description={t("settings.general.assistantOutput.description")}
           resetAction={
             settings.enableAssistantStreaming !==
             DEFAULT_UNIFIED_SETTINGS.enableAssistantStreaming ? (
@@ -1615,14 +1618,14 @@ export function GeneralSettingsPanel() {
               onCheckedChange={(checked) =>
                 updateSettings({ enableAssistantStreaming: Boolean(checked) })
               }
-              aria-label="Stream assistant messages"
+              aria-label={t("settings.general.assistantOutput.ariaLabel")}
             />
           }
         />
 
         <SettingsRow
           title="Provider update checks"
-          description="Check installed provider CLIs for newer available versions."
+          description={t("settings.general.providerUpdateChecks.description")}
           resetAction={
             settings.enableProviderUpdateChecks !==
             DEFAULT_UNIFIED_SETTINGS.enableProviderUpdateChecks ? (
@@ -1642,7 +1645,7 @@ export function GeneralSettingsPanel() {
               onCheckedChange={(checked) =>
                 updateSettings({ enableProviderUpdateChecks: Boolean(checked) })
               }
-              aria-label="Check provider versions"
+              aria-label={t("settings.general.providerUpdateChecks.ariaLabel")}
             />
           }
         />
@@ -1652,8 +1655,7 @@ export function GeneralSettingsPanel() {
             <span className="inline-flex items-center gap-1.5">
               Background activity
               <PolicyTooltip>
-                This shared policy gates background work such as Git refreshes and provider health
-                probes after their individual intervals elapse.
+                {t("settings.general.backgroundActivity.policyTooltip")}
               </PolicyTooltip>
             </span>
           }
@@ -1684,7 +1686,10 @@ export function GeneralSettingsPanel() {
                   }
                 }}
               >
-                <SelectTrigger className="w-full sm:w-40" aria-label="Background activity profile">
+                <SelectTrigger
+                  className="w-full sm:w-40"
+                  aria-label={t("settings.general.backgroundActivity.profileAriaLabel")}
+                >
                   <SelectValue>
                     {backgroundActivityProfileOptionLabels(t)[backgroundActivityProfileOption]}
                   </SelectValue>
@@ -1711,14 +1716,16 @@ export function GeneralSettingsPanel() {
                       <Button
                         size="icon-sm"
                         variant="outline"
-                        aria-label="Configure advanced background activity"
+                        aria-label={t("settings.general.backgroundActivity.configureAriaLabel")}
                         onClick={() => setBackgroundActivityDialogOpen(true)}
                       >
                         <SettingsIcon className="size-4" />
                       </Button>
                     }
                   />
-                  <TooltipPopup side="top">Configure background activity</TooltipPopup>
+                  <TooltipPopup side="top">
+                    {t("settings.general.backgroundActivity.configureTooltip")}
+                  </TooltipPopup>
                 </Tooltip>
               ) : null}
               <BackgroundActivityAdvancedDialog
@@ -1731,7 +1738,7 @@ export function GeneralSettingsPanel() {
 
         <SettingsRow
           title="Auto-open task panel"
-          description="Open the right-side plan and task panel automatically when steps appear."
+          description={t("settings.general.autoOpenTaskPanel.description")}
           resetAction={
             settings.autoOpenPlanSidebar !== DEFAULT_UNIFIED_SETTINGS.autoOpenPlanSidebar ? (
               <SettingResetButton
@@ -1750,14 +1757,14 @@ export function GeneralSettingsPanel() {
               onCheckedChange={(checked) =>
                 updateSettings({ autoOpenPlanSidebar: Boolean(checked) })
               }
-              aria-label="Open the task panel automatically"
+              aria-label={t("settings.general.autoOpenTaskPanel.ariaLabel")}
             />
           }
         />
 
         <SettingsRow
-          title="New threads"
-          description="Pick the default workspace mode for newly created draft threads."
+          title={t("settings.general.newThreads.title")}
+          description={t("settings.general.newThreads.description")}
           resetAction={
             settings.defaultThreadEnvMode !== DEFAULT_UNIFIED_SETTINGS.defaultThreadEnvMode ||
             settings.newWorktreesStartFromOrigin !==
@@ -1783,17 +1790,22 @@ export function GeneralSettingsPanel() {
                 }
               }}
             >
-              <SelectTrigger className="w-full sm:w-44" aria-label="Default thread mode">
+              <SelectTrigger
+                className="w-full sm:w-44"
+                aria-label={t("settings.general.newThreads.ariaLabel")}
+              >
                 <SelectValue>
-                  {settings.defaultThreadEnvMode === "worktree" ? "New worktree" : "Local"}
+                  {settings.defaultThreadEnvMode === "worktree"
+                    ? t("settings.general.newThreads.worktree")
+                    : t("settings.general.newThreads.local")}
                 </SelectValue>
               </SelectTrigger>
               <SelectPopup align="end" alignItemWithTrigger={false}>
                 <SelectItem hideIndicator value="local">
-                  Local
+                  {t("settings.general.newThreads.local")}
                 </SelectItem>
                 <SelectItem hideIndicator value="worktree">
-                  New worktree
+                  {t("settings.general.newThreads.worktree")}
                 </SelectItem>
               </SelectPopup>
             </Select>
@@ -1803,8 +1815,8 @@ export function GeneralSettingsPanel() {
         {settings.defaultThreadEnvMode === "worktree" ? (
           <SettingsRow
             className="bg-muted/20 sm:ps-9"
-            title="Start from origin"
-            description="Creates the worktree from the latest matching branch on origin instead of your local branch."
+            title={t("settings.general.startFromOrigin.title")}
+            description={t("settings.general.startFromOrigin.description")}
             resetAction={
               settings.newWorktreesStartFromOrigin !==
               DEFAULT_UNIFIED_SETTINGS.newWorktreesStartFromOrigin ? (
@@ -1825,15 +1837,15 @@ export function GeneralSettingsPanel() {
                 onCheckedChange={(checked) =>
                   updateSettings({ newWorktreesStartFromOrigin: Boolean(checked) })
                 }
-                aria-label="Start new worktrees from origin by default"
+                aria-label={t("settings.general.startFromOrigin.ariaLabel")}
               />
             }
           />
         ) : null}
 
         <SettingsRow
-          title="Add project starts in"
-          description='Leave empty to use "~/" when the Add Project browser opens.'
+          title={t("settings.general.addProjectBaseDirectory.title")}
+          description={t("settings.general.addProjectBaseDirectory.description")}
           resetAction={
             settings.addProjectBaseDirectory !==
             DEFAULT_UNIFIED_SETTINGS.addProjectBaseDirectory ? (
@@ -1854,14 +1866,14 @@ export function GeneralSettingsPanel() {
               onCommit={(next) => updateSettings({ addProjectBaseDirectory: next })}
               placeholder="~/"
               spellCheck={false}
-              aria-label="Add project base directory"
+              aria-label={t("settings.general.addProjectBaseDirectory.ariaLabel")}
             />
           }
         />
 
         <SettingsRow
           title="Archive confirmation"
-          description="Require a second click on the inline archive action before a thread is archived."
+          description={t("settings.general.archiveConfirmation.description")}
           resetAction={
             settings.confirmThreadArchive !== DEFAULT_UNIFIED_SETTINGS.confirmThreadArchive ? (
               <SettingResetButton
@@ -1880,14 +1892,14 @@ export function GeneralSettingsPanel() {
               onCheckedChange={(checked) =>
                 updateSettings({ confirmThreadArchive: Boolean(checked) })
               }
-              aria-label="Confirm thread archiving"
+              aria-label={t("settings.general.archiveConfirmation.ariaLabel")}
             />
           }
         />
 
         <SettingsRow
           title="Delete confirmation"
-          description="Ask before deleting a thread and its chat history."
+          description={t("settings.general.deleteConfirmation.description")}
           resetAction={
             settings.confirmThreadDelete !== DEFAULT_UNIFIED_SETTINGS.confirmThreadDelete ? (
               <SettingResetButton
@@ -1906,14 +1918,14 @@ export function GeneralSettingsPanel() {
               onCheckedChange={(checked) =>
                 updateSettings({ confirmThreadDelete: Boolean(checked) })
               }
-              aria-label="Confirm thread deletion"
+              aria-label={t("settings.general.deleteConfirmation.ariaLabel")}
             />
           }
         />
 
         <SettingsRow
           title="Text generation model"
-          description="Default model for generated text like thread titles and source control content. Source control settings can override it with a dedicated source control writer model."
+          description={t("settings.general.textGenerationModel.description")}
           resetAction={
             isTextGenerationModelDirty ? (
               <SettingResetButton
@@ -1986,7 +1998,7 @@ export function GeneralSettingsPanel() {
         />
       </SettingsSection>
 
-      <SettingsSection title="About">
+      <SettingsSection title={t("settings.general.about.section")}>
         {isElectron || HOSTED_APP_CHANNEL ? (
           <AboutVersionSection />
         ) : (
@@ -1996,11 +2008,11 @@ export function GeneralSettingsPanel() {
           />
         )}
         <SettingsRow
-          title="Diagnostics"
+          title={t("settings.general.diagnostics.title")}
           description={diagnosticsDescription}
           control={
             <Button render={<Link to="/settings/diagnostics" />} size="xs" variant="outline">
-              View diagnostics
+              {t("settings.general.diagnostics.view")}
             </Button>
           }
         />

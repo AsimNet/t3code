@@ -8,6 +8,7 @@ import { BrowserSurfaceSlot } from "~/browser/BrowserSurfaceSlot";
 import { previewRuntimeTabId } from "~/browser/previewRuntimeTabId";
 import { Button } from "~/components/ui/button";
 import { toastManager } from "~/components/ui/toast";
+import { useT } from "~/i18n";
 import { useThreadPreviewState } from "~/previewStateStore";
 import { selectThreadPreviewMiniPlayer, usePreviewMiniPlayerStore } from "~/previewMiniPlayerStore";
 import { useRightPanelStore } from "~/rightPanelStore";
@@ -42,6 +43,7 @@ interface Props {
 }
 
 export function ThreadPreviewMiniPlayer({ threadRef, tabId, bottomInset }: Props) {
+  const t = useT();
   const rootRef = useRef<HTMLElement | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const resizeRef = useRef<ResizeState | null>(null);
@@ -74,7 +76,7 @@ export function ThreadPreviewMiniPlayer({ threadRef, tabId, bottomInset }: Props
     void operation(runtimeTabId).catch((error) => {
       toastManager.add({
         type: "error",
-        title: "Unable to update popped-out preview",
+        title: t("panel.preview.toast.pipFailed"),
         description: error instanceof Error ? error.message : "An error occurred.",
       });
     });
@@ -256,13 +258,13 @@ export function ThreadPreviewMiniPlayer({ threadRef, tabId, bottomInset }: Props
             size="icon-xs"
             aria-label={
               desktopOverlay?.pictureInPicture
-                ? "Close popped-out preview"
-                : "Pop preview into separate window"
+                ? t("panel.preview.separateWindow.close")
+                : t("panel.preview.separateWindow.open")
             }
             title={
               desktopOverlay?.pictureInPicture
-                ? "Close separate window"
-                : "Pop into separate window"
+                ? t("panel.preview.separateWindow.close")
+                : t("panel.preview.separateWindow.open")
             }
             disabled={!desktopOverlay?.hasWebContents}
             onPointerDown={(event) => event.stopPropagation()}
@@ -273,8 +275,8 @@ export function ThreadPreviewMiniPlayer({ threadRef, tabId, bottomInset }: Props
           <Button
             variant="ghost"
             size="icon-xs"
-            aria-label="Close floating preview"
-            title="Close floating preview"
+            aria-label={t("panel.preview.closeFloating")}
+            title={t("panel.preview.closeFloating")}
             onPointerDown={(event) => event.stopPropagation()}
             onClick={close}
           >

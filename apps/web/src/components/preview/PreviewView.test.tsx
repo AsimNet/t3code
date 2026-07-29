@@ -21,7 +21,10 @@ const mocks = vi.hoisted(() => ({
   showEmptyState: false,
 }));
 
-vi.mock("~/state/session", () => ({
+// Localizing this view pulled in the settings store, which reaches
+// `~/state/server` and so needs the session atoms this partial mock was omitting.
+vi.mock("~/state/session", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("~/state/session")>()),
   readPreparedConnection: mocks.readPreparedConnection,
 }));
 

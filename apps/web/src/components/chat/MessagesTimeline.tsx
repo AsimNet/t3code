@@ -96,6 +96,7 @@ import {
   type ParsedPreviewAnnotation,
 } from "~/lib/previewAnnotation";
 import { cn } from "~/lib/utils";
+import { useT } from "~/i18n";
 import { useUiStateStore } from "~/uiStateStore";
 import { type TimestampFormat } from "@t3tools/contracts/settings";
 import { formatChatTimestampTooltip, formatShortTimestamp } from "../../timestampFormat";
@@ -873,6 +874,7 @@ const TimelineRowContent = memo(function TimelineRowContent({ row }: { row: Time
 });
 
 function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" }> }) {
+  const t = useT();
   const ctx = use(TimelineRowCtx);
   const userImages = row.message.attachments ?? [];
   const displayedUserMessage = deriveDisplayedUserMessageState(row.message.text);
@@ -908,7 +910,7 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
                   <button
                     type="button"
                     className="h-full w-full cursor-zoom-in"
-                    aria-label={`Preview ${image.name}`}
+                    aria-label={t("chat.composer.images.preview", { name: image.name })}
                     onClick={() => {
                       const preview = buildExpandedImagePreview(regularImages, image.id);
                       if (!preview) return;
@@ -1351,6 +1353,7 @@ function UserMessagePreviewAnnotationCard(props: {
   annotation: ParsedPreviewAnnotation;
   image: NonNullable<TimelineMessage["attachments"]>[number] | null;
 }) {
+  const t = useT();
   const ctx = use(TimelineRowCtx);
   return (
     <div className="mb-2 flex max-w-full items-center overflow-hidden rounded-lg border border-border/70 bg-background/70">
@@ -1358,7 +1361,7 @@ function UserMessagePreviewAnnotationCard(props: {
         <button
           type="button"
           className="size-14 shrink-0 cursor-zoom-in overflow-hidden border-e border-border/70 bg-muted"
-          aria-label={`Preview ${props.image.name}`}
+          aria-label={t("chat.composer.images.preview", { name: props.image.name })}
           onClick={() => {
             if (!props.image) return;
             const preview = buildExpandedImagePreview([props.image], props.image.id);

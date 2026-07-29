@@ -22,6 +22,7 @@ import ChatMarkdown from "~/components/ChatMarkdown";
 import { OpenInPicker } from "~/components/chat/OpenInPicker";
 import { useClientSettings } from "~/hooks/useSettings";
 import { useTheme } from "~/hooks/useTheme";
+import { useT } from "~/i18n";
 import { getLocalStorageItem, setLocalStorageItem } from "~/hooks/useLocalStorage";
 import { resolveDiffThemeName } from "~/lib/diffRendering";
 import { cn } from "~/lib/utils";
@@ -121,6 +122,7 @@ function WorkspaceImagePreview(props: {
   readonly absolutePath: string;
   readonly alt: string;
 }) {
+  const t = useT();
   const assetUrl = useAssetUrlState(props.environmentId, {
     _tag: "workspace-file",
     threadId: props.threadRef.threadId,
@@ -131,7 +133,7 @@ function WorkspaceImagePreview(props: {
   if (assetUrl._tag === "Failure" || (assetUrl._tag === "Success" && failedUrl === assetUrl.url)) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center px-6 text-center text-xs leading-relaxed text-destructive">
-        Unable to load workspace image.
+        {t("panel.file.imageError")}
       </div>
     );
   }
@@ -659,6 +661,7 @@ export default function FilePreviewPanel({
   onOpenFile,
   onPendingChange,
 }: FilePreviewPanelProps) {
+  const t = useT();
   const { resolvedTheme } = useTheme();
   const wordWrap = useClientSettings((settings) => settings.wordWrap);
   const primaryEnvironmentId = usePrimaryEnvironmentId();
@@ -727,12 +730,12 @@ export default function FilePreviewPanel({
       toastManager.add(
         stackedThreadToast({
           type: "error",
-          title: "Unable to open file in browser",
-          description: error instanceof Error ? error.message : "An error occurred.",
+          title: t("panel.file.openInBrowserFailed"),
+          description: error instanceof Error ? error.message : t("panel.error.generic"),
         }),
       );
     })();
-  }, [absolutePath, createAssetUrl, environmentHttpBaseUrl, openPreview, threadRef]);
+  }, [absolutePath, createAssetUrl, environmentHttpBaseUrl, openPreview, t, threadRef]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
@@ -793,7 +796,11 @@ export default function FilePreviewPanel({
                         revealRequestId: pressed ? revealRequestId : null,
                       });
                     }}
-                    aria-label={renderMarkdown ? "Show markdown source" : "Show rendered markdown"}
+                    aria-label={
+                      renderMarkdown
+                        ? t("panel.file.markdownSource")
+                        : t("panel.file.markdownRendered")
+                    }
                     variant="ghost"
                     size="sm"
                   >
@@ -802,7 +809,7 @@ export default function FilePreviewPanel({
                 }
               />
               <TooltipPopup>
-                {renderMarkdown ? "Show markdown source" : "Show rendered markdown"}
+                {renderMarkdown ? t("panel.file.markdownSource") : t("panel.file.markdownRendered")}
               </TooltipPopup>
             </Tooltip>
           ) : null}
@@ -814,7 +821,7 @@ export default function FilePreviewPanel({
                     className="shrink-0"
                     pressed={false}
                     onPressedChange={handleOpenInBrowser}
-                    aria-label="Open file in preview browser"
+                    aria-label={t("panel.file.openInPreviewBrowser")}
                     variant="ghost"
                     size="sm"
                   >
@@ -822,7 +829,7 @@ export default function FilePreviewPanel({
                   </Toggle>
                 }
               />
-              <TooltipPopup>Open file in preview browser</TooltipPopup>
+              <TooltipPopup>{t("panel.file.openInPreviewBrowser")}</TooltipPopup>
             </Tooltip>
           ) : null}
           <Tooltip>
@@ -832,7 +839,9 @@ export default function FilePreviewPanel({
                   className="shrink-0"
                   pressed={explorerOpen}
                   onPressedChange={toggleExplorer}
-                  aria-label={explorerOpen ? "Hide file explorer" : "Show file explorer"}
+                  aria-label={
+                    explorerOpen ? t("panel.file.hideExplorer") : t("panel.file.showExplorer")
+                  }
                   variant="ghost"
                   size="sm"
                 >
@@ -841,14 +850,14 @@ export default function FilePreviewPanel({
               }
             />
             <TooltipPopup>
-              {explorerOpen ? "Hide file explorer" : "Show file explorer"}
+              {explorerOpen ? t("panel.file.hideExplorer") : t("panel.file.showExplorer")}
             </TooltipPopup>
           </Tooltip>
         </div>
       ) : null}
       {relativePath && file.data?.truncated ? (
         <div className="shrink-0 border-b border-amber-500/20 bg-amber-500/8 px-3 py-1.5 text-2xs text-amber-700 dark:text-amber-300">
-          Preview limited to the first 1 MB of a {file.data.byteLength.toLocaleString()} byte file.
+          {t("panel.file.truncated", { bytes: file.data.byteLength.toLocaleString() })}
         </div>
       ) : null}
       <div className="flex min-h-0 flex-1 overflow-hidden">

@@ -15,6 +15,7 @@ import { Tooltip, TooltipPopup, TooltipTrigger } from "~/components/ui/tooltip";
 import { useComposerHandleContext } from "~/composerHandleContext";
 import { writeTextToClipboard } from "~/hooks/useCopyToClipboard";
 import { useTheme } from "~/hooks/useTheme";
+import { useT } from "~/i18n";
 import { cn } from "~/lib/utils";
 import { readLocalApi } from "~/localApi";
 import { T3_PIERRE_ICONS } from "~/pierre-icons";
@@ -46,6 +47,8 @@ function treePath(entry: ProjectEntry): string {
 }
 
 function RefreshFilesButton(props: { isPending: boolean; onRefresh: () => void }) {
+  const t = useT();
+
   return (
     <Tooltip>
       <TooltipTrigger
@@ -54,14 +57,16 @@ function RefreshFilesButton(props: { isPending: boolean; onRefresh: () => void }
             type="button"
             variant="ghost"
             size="icon-xs"
-            aria-label="Refresh workspace files"
+            aria-label={t("panel.files.refreshAria")}
             onClick={props.onRefresh}
           />
         }
       >
         <RotateCw className={cn(props.isPending && "animate-spin")} />
       </TooltipTrigger>
-      <TooltipPopup>{props.isPending ? "Refreshing…" : "Refresh files"}</TooltipPopup>
+      <TooltipPopup>
+        {props.isPending ? t("panel.files.refreshing") : t("panel.files.refresh")}
+      </TooltipPopup>
     </Tooltip>
   );
 }
@@ -73,6 +78,8 @@ function FileSearchField(props: {
   onValueChange: (value: string) => void;
   value: string;
 }) {
+  const t = useT();
+
   return (
     <InputGroup variant="ghost" className="h-7 min-w-0 flex-1 rounded-md">
       <InputGroupInput
@@ -81,7 +88,7 @@ function FileSearchField(props: {
         size="sm"
         value={props.value}
         aria-label={props.ariaLabel}
-        placeholder="Search files"
+        placeholder={t("panel.files.searchPlaceholder")}
         spellCheck={false}
         onChange={(event) => props.onValueChange(event.target.value)}
         onKeyDown={(event) => {
@@ -100,6 +107,7 @@ export default function FileBrowserPanel({
   projectName,
   onOpenFile,
 }: FileBrowserPanelProps) {
+  const t = useT();
   const { resolvedTheme } = useTheme();
   const composerRef = useComposerHandleContext();
   const entriesQuery = useProjectEntriesQuery(environmentId, cwd);
@@ -144,20 +152,24 @@ export default function FileBrowserPanel({
     try {
       const clicked = await api.contextMenu.show(
         [
-          { id: "copy-mention", label: "Copy mention" },
-          { id: "add-to-chat", label: "Add to chat" },
+          { id: "copy-mention", label: t("panel.files.copyMention") },
+          { id: "add-to-chat", label: t("panel.files.addToChat") },
         ],
         position,
       );
       if (clicked === "copy-mention") {
         try {
           await writeTextToClipboard(mention);
-          toastManager.add({ type: "success", title: "Mention copied", description: relativePath });
+          toastManager.add({
+            type: "success",
+            title: t("panel.files.mentionCopied"),
+            description: relativePath,
+          });
         } catch (error) {
           toastManager.add({
             type: "error",
-            title: "Failed to copy mention",
-            description: error instanceof Error ? error.message : "An error occurred.",
+            title: t("panel.files.mentionCopyFailed"),
+            description: error instanceof Error ? error.message : t("panel.error.generic"),
           });
         }
         return;
@@ -167,8 +179,8 @@ export default function FileBrowserPanel({
         if (!composer) {
           toastManager.add({
             type: "error",
-            title: "Unable to add to chat",
-            description: "Open a chat for this project and try again.",
+            title: t("panel.files.addToChatFailed"),
+            description: t("panel.files.addToChatNoComposer"),
           });
           return;
         }
@@ -176,8 +188,8 @@ export default function FileBrowserPanel({
         if (!inserted) {
           toastManager.add({
             type: "error",
-            title: "Unable to add to chat",
-            description: "The chat isn't ready to accept input right now.",
+            title: t("panel.files.addToChatFailed"),
+            description: t("panel.files.addToChatNotReady"),
           });
         }
       }
@@ -282,7 +294,7 @@ export default function FileBrowserPanel({
         <RefreshFilesButton isPending={entriesQuery.isPending} onRefresh={entriesQuery.refresh} />
         <FileSearchField
           name="project-files-search"
-          ariaLabel={`Search ${projectName} files`}
+          ariaLabel={t("panel.files.searchAria", { project: projectName })}
           value={search.value}
           onValueChange={handleSearchValueChange}
           onClose={search.close}
@@ -293,7 +305,7 @@ export default function FileBrowserPanel({
       ) : (
         <FileTree
           model={model}
-          aria-label={`${projectName} files`}
+          aria-label={t("panel.files.treeAria", { project: projectName })}
           className="min-h-0 flex-1 overflow-hidden"
           style={{
             colorScheme: resolvedTheme,

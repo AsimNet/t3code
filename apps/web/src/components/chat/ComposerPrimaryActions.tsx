@@ -1,6 +1,7 @@
 import { memo, type PointerEventHandler } from "react";
 import { ChevronDownIcon, ChevronLeftIcon } from "lucide-react";
 import { useEnvironmentIdentificationMode } from "~/hooks/useSettings";
+import { useT } from "~/i18n";
 import { cn } from "~/lib/utils";
 import { StageBackdropButtonArt, useSidebarStageBackdropVariant } from "../SidebarStageBackdrop";
 import { Button } from "../ui/button";
@@ -72,6 +73,7 @@ export const ComposerPrimaryActions = memo(function ComposerPrimaryActions({
   onInterrupt,
   onImplementPlanInNewThread,
 }: ComposerPrimaryActionsProps) {
+  const t = useT();
   const pointerFocusProps = preserveComposerFocusOnPointerDown
     ? { onPointerDown: preventPointerFocus }
     : undefined;
@@ -227,10 +229,10 @@ export const ComposerPrimaryActions = memo(function ComposerPrimaryActions({
             : isConnecting
               ? "Connecting"
               : isPreparingWorktree
-                ? "Preparing worktree"
+                ? t("chat.composer.preparingWorktree")
                 : isSendBusy
                   ? "Sending"
-                  : "Send message"
+                  : t("chat.composer.sendMessage")
       }
     >
       {stageBackdropVariant ? (

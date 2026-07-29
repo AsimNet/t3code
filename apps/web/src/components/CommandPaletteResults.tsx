@@ -15,6 +15,7 @@ import {
   CommandShortcut,
 } from "./ui/command";
 import { cn } from "~/lib/utils";
+import { useT } from "~/i18n";
 
 interface CommandPaletteResultsProps {
   emptyStateMessage?: string;
@@ -26,13 +27,12 @@ interface CommandPaletteResultsProps {
 }
 
 export function CommandPaletteResults(props: CommandPaletteResultsProps) {
+  const t = useT();
   if (props.groups.length === 0) {
     return (
       <div className="py-10 text-center text-sm text-muted-foreground">
         {props.emptyStateMessage ??
-          (props.isActionsOnly
-            ? "No matching actions."
-            : "No matching commands, projects, or threads.")}
+          (props.isActionsOnly ? t("palette.empty.actions") : t("palette.empty.everything"))}
       </div>
     );
   }

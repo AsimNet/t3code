@@ -32,6 +32,7 @@ import { projectEnvironment } from "~/state/projects";
 import { stackedThreadToast, toastManager } from "./ui/toast";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { useAtomCommand } from "~/state/use-atom-command";
+import { useT } from "~/i18n";
 
 function stepStatusIcon(status: string): React.ReactNode {
   if (status === "completed") {
@@ -70,7 +71,7 @@ interface PlanSidebarProps {
 const PlanSidebar = memo(function PlanSidebar({
   activePlan,
   activeProposedPlan,
-  label = "Plan",
+  label,
   environmentId,
   threadRef,
   markdownCwd,
@@ -78,6 +79,7 @@ const PlanSidebar = memo(function PlanSidebar({
   timestampFormat,
   mode = "sidebar",
 }: PlanSidebarProps) {
+  const t = useT();
   const [proposedPlanExpanded, setProposedPlanExpanded] = useState(false);
   const [isSavingToWorkspace, setIsSavingToWorkspace] = useState(false);
   const writeProjectFile = useAtomCommand(projectEnvironment.writeFile, {
@@ -117,7 +119,7 @@ const PlanSidebar = memo(function PlanSidebar({
       if (result._tag === "Success") {
         toastManager.add({
           type: "success",
-          title: "Plan saved",
+          title: t("palette.plan.saved"),
           description: result.value.relativePath,
         });
         return;
@@ -127,13 +129,13 @@ const PlanSidebar = memo(function PlanSidebar({
         toastManager.add(
           stackedThreadToast({
             type: "error",
-            title: "Could not save plan",
-            description: error instanceof Error ? error.message : "An error occurred.",
+            title: t("palette.plan.saveFailed"),
+            description: error instanceof Error ? error.message : t("palette.error.generic"),
           }),
         );
       }
     })();
-  }, [environmentId, planMarkdown, workspaceRoot, writeProjectFile]);
+  }, [environmentId, planMarkdown, t, workspaceRoot, writeProjectFile]);
 
   return (
     <div
@@ -152,7 +154,7 @@ const PlanSidebar = memo(function PlanSidebar({
             size="sm"
             className="rounded-md px-1.5 py-0 font-semibold tracking-wide uppercase"
           >
-            {label}
+            {label ?? t("palette.plan.label")}
           </Badge>
           {activePlan ? (
             <span className="text-2xs text-muted-foreground/60 tabular-nums">
@@ -169,7 +171,7 @@ const PlanSidebar = memo(function PlanSidebar({
                     size="icon-xs"
                     variant="ghost"
                     className="text-muted-foreground/50 hover:text-foreground/70"
-                    aria-label="Plan actions"
+                    aria-label={t("palette.plan.actions")}
                   />
                 }
               >
@@ -177,14 +179,14 @@ const PlanSidebar = memo(function PlanSidebar({
               </MenuTrigger>
               <MenuPopup align="end">
                 <MenuItem onClick={handleCopyPlan}>
-                  {isCopied ? "Copied!" : "Copy to clipboard"}
+                  {isCopied ? t("palette.copied") : t("palette.plan.copy")}
                 </MenuItem>
-                <MenuItem onClick={handleDownload}>Download as markdown</MenuItem>
+                <MenuItem onClick={handleDownload}>{t("palette.plan.download")}</MenuItem>
                 <MenuItem
                   onClick={handleSaveToWorkspace}
                   disabled={!workspaceRoot || isSavingToWorkspace}
                 >
-                  Save to workspace
+                  {t("palette.plan.saveToWorkspace")}
                 </MenuItem>
               </MenuPopup>
             </Menu>
@@ -206,7 +208,7 @@ const PlanSidebar = memo(function PlanSidebar({
           {activePlan && activePlan.steps.length > 0 ? (
             <div className="space-y-1">
               <p className="mb-2 text-3xs font-semibold tracking-widest text-muted-foreground/40 uppercase">
-                Steps
+                {t("palette.plan.steps")}
               </p>
               {activePlan.steps.map((step) => (
                 <div
@@ -249,7 +251,7 @@ const PlanSidebar = memo(function PlanSidebar({
                   <ChevronRightIcon className="size-3 shrink-0 text-muted-foreground/40 transition-transform rtl:rotate-180" />
                 )}
                 <span className="text-3xs font-semibold tracking-widest text-muted-foreground/40 uppercase group-hover:text-muted-foreground/60">
-                  {planTitle ?? "Full Plan"}
+                  {planTitle ?? t("palette.plan.full")}
                 </span>
               </button>
               {proposedPlanExpanded ? (
@@ -268,9 +270,11 @@ const PlanSidebar = memo(function PlanSidebar({
           {/* Empty state */}
           {!activePlan && !planMarkdown ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-[13px] text-muted-foreground/40">No active plan yet.</p>
+              <p className="text-[13px] text-muted-foreground/40">
+                {t("palette.plan.empty.title")}
+              </p>
               <p className="mt-1 text-2xs text-muted-foreground/30">
-                Plans will appear here when generated.
+                {t("palette.plan.empty.description")}
               </p>
             </div>
           ) : null}

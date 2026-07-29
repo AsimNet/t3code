@@ -1,3 +1,5 @@
+import { useT } from "~/i18n";
+
 import { BrowserMockup } from "./BrowserMockup";
 import type { PreviewableServer } from "./useDiscoveredLocalServers";
 
@@ -7,7 +9,8 @@ interface Props {
 }
 
 export function PreviewLocalServerCard({ server, onOpen }: Props) {
-  const subtitle = describeServer(server);
+  const t = useT();
+  const subtitle = server.processName ?? t(describeServer(server));
   return (
     <button
       type="button"
@@ -26,16 +29,24 @@ export function PreviewLocalServerCard({ server, onOpen }: Props) {
   );
 }
 
-function describeServer(server: PreviewableServer): string {
-  if (server.processName) return server.processName;
-  if (server.listening) return "Listening";
-  if (server.source === "configured") return "Configured";
-  return "Recently seen";
+function describeServer(
+  server: PreviewableServer,
+):
+  | "panel.preview.server.listening"
+  | "panel.preview.server.configured"
+  | "panel.preview.server.recentlySeen" {
+  if (server.listening) return "panel.preview.server.listening";
+  if (server.source === "configured") return "panel.preview.server.configured";
+  return "panel.preview.server.recentlySeen";
 }
 
 function PulsingDot() {
+  const t = useT();
   return (
-    <span aria-label="Listening" className="relative inline-flex size-2 shrink-0">
+    <span
+      aria-label={t("panel.preview.server.listening")}
+      className="relative inline-flex size-2 shrink-0"
+    >
       <span className="absolute inset-0 animate-status-ping rounded-full bg-success opacity-60" />
       <span className="relative inline-flex size-2 rounded-full bg-success" />
     </span>
@@ -43,9 +54,10 @@ function PulsingDot() {
 }
 
 function DimDot() {
+  const t = useT();
   return (
     <span
-      aria-label="Not currently listening"
+      aria-label={t("panel.preview.server.notListening")}
       className="size-2 shrink-0 rounded-full bg-muted-foreground/40"
     />
   );

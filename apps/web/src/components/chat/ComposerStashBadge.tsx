@@ -1,6 +1,7 @@
 import { BookmarkIcon } from "lucide-react";
 import { memo } from "react";
 
+import { useT } from "~/i18n";
 import { cn } from "~/lib/utils";
 
 /**
@@ -18,13 +19,15 @@ export const ComposerStashBadge = memo(function ComposerStashBadge(props: {
   menuOpen: boolean;
   onToggleMenu: () => void;
 }) {
+  const t = useT();
+
   if (props.count === 0) return null;
 
   return (
     <button
       type="button"
       data-prompt-stash-badge="true"
-      aria-label={`Stashed prompts: ${props.count}. Open stash.`}
+      aria-label={t("chat.stash.badge.aria", { count: props.count })}
       aria-expanded={props.menuOpen}
       className={cn(
         "absolute -top-3 end-4 z-10 inline-flex cursor-pointer items-center gap-1.5 rounded-full border bg-popover px-2.5 py-0.5 text-xs shadow-sm",
@@ -40,7 +43,7 @@ export const ComposerStashBadge = memo(function ComposerStashBadge(props: {
       onClick={props.onToggleMenu}
     >
       <BookmarkIcon className="size-3" aria-hidden="true" />
-      Stash
+      {t("chat.stash.badge.label")}
       <span
         key={props.pulseKey}
         className={cn(

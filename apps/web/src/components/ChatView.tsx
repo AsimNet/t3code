@@ -1129,6 +1129,7 @@ function chatActionErrorMessage(error: unknown): string {
 }
 
 function ChatViewContent(props: ChatViewProps) {
+  const t = useT();
   const {
     environmentId,
     threadId,
@@ -2039,7 +2040,10 @@ function ChatViewContent(props: ChatViewProps) {
     () => deriveActivePlanState(threadActivities, activeLatestTurn?.turnId ?? undefined),
     [activeLatestTurn?.turnId, threadActivities],
   );
-  const planSidebarLabel = sidebarProposedPlan || interactionMode === "plan" ? "Plan" : "Tasks";
+  const planSidebarLabel =
+    sidebarProposedPlan || interactionMode === "plan"
+      ? t("chat.planSidebar.plan")
+      : t("chat.planSidebar.tasks");
   const showPlanFollowUpPrompt =
     pendingUserInputs.length === 0 &&
     interactionMode === "plan" &&
@@ -3435,7 +3439,6 @@ function ChatViewContent(props: ChatViewProps) {
   const showScrollDebouncer = useRef(
     new Debouncer(() => setShowScrollToBottom(true), { wait: 150 }),
   );
-  const t = useT();
   const chatAutoScroll = useClientSettings((settings) => settings.chatAutoScroll);
   const reduceMotionSetting = useClientSettings((settings) => settings.reduceMotion);
   const timelineReduceMotion = prefersReducedMotion(reduceMotionSetting);

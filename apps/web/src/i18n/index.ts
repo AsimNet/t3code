@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 
 import { directionForLocale, resolveLocale, type Locale, type TextDirection } from "~/appearance";
-import { useClientSettings } from "~/hooks/useSettings";
+import { getClientSettings, useClientSettings } from "~/hooks/useSettings";
 import { STRINGS, type TranslationKey } from "./strings";
 import type { TranslationEntry } from "./strings/types";
 
@@ -32,6 +32,16 @@ export function translate(locale: Locale, key: TranslationKey, values?: Translat
 }
 
 export type Translate = (key: TranslationKey, values?: TranslationValues) => string;
+
+/**
+ * Translator for code that is not inside a React render: module-level helpers,
+ * event handlers, and presentational functions that callers invoke directly
+ * rather than mounting. It reads the current settings snapshot on every call, so
+ * it picks up a locale change the next time its caller renders — it just cannot
+ * subscribe to one itself. Prefer `useT()` in anything that actually mounts.
+ */
+export const translateNow: Translate = (key, values) =>
+  translate(resolveLocale(getClientSettings().language), key, values);
 
 /** The locale in effect, resolving `system` against the browser languages. */
 export function useLocale(): Locale {

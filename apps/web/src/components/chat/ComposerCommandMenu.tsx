@@ -8,6 +8,7 @@ import { BotIcon } from "lucide-react";
 import { memo, useLayoutEffect, useMemo, useRef } from "react";
 
 import { type ComposerSlashCommand, type ComposerTriggerKind } from "../../composer-logic";
+import { useT } from "~/i18n";
 import { formatProviderSkillInstallSource } from "~/providerSkillPresentation";
 import { cn } from "~/lib/utils";
 import {
@@ -114,6 +115,7 @@ export const ComposerCommandMenu = memo(function ComposerCommandMenu(props: {
   onHighlightedItemChange: (itemId: string | null) => void;
   onSelect: (item: ComposerCommandItem) => void;
 }) {
+  const t = useT();
   const listRef = useRef<HTMLDivElement>(null);
   const groups = useMemo(
     () =>
@@ -178,8 +180,7 @@ export const ComposerCommandMenu = memo(function ComposerCommandMenu(props: {
                 <p className="text-muted-foreground/70 text-xs">
                   {props.isLoading
                     ? "Searching workspace skills..."
-                    : (props.emptyStateText ??
-                      "No skills found. Try / to browse provider commands.")}
+                    : (props.emptyStateText ?? t("chat.composer.menu.noSkills"))}
                 </p>
               </CommandGroup>
             ) : (
@@ -188,8 +189,8 @@ export const ComposerCommandMenu = memo(function ComposerCommandMenu(props: {
                   ? "Searching workspace files..."
                   : (props.emptyStateText ??
                     (props.triggerKind === "path"
-                      ? "No matching files or folders."
-                      : "No matching command."))}
+                      ? t("chat.composer.menu.noPaths")
+                      : t("chat.composer.menu.noCommands")))}
               </p>
             )}
           </div>
