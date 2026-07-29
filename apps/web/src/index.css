@@ -288,8 +288,14 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
 }
 
 @layer components {
+  /* `position` and the inline margin both live here rather than as utilities on
+     the component: utilities are a later cascade layer, so a `relative` or `ml-`
+     class there would win over these rules no matter their specificity, and the
+     RTL placement below could never take effect. `z-10` stays a utility — it
+     needs a positioned element, which both branches provide. */
   .sidebar-brand {
     display: none;
+    position: relative;
     /* Clears the sidebar toggle, which is fixed at the inline start. */
     margin-inline-start: var(--workspace-titlebar-content-left);
   }
@@ -305,10 +311,13 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
      the static position it would otherwise inherit. */
   [dir="rtl"] .sidebar-brand {
     position: absolute;
-    left: 0;
+    /* Physical, not logical: the gap is from the left edge of the window, and an
+       inline-start margin here would resolve to the right and leave the wordmark
+       flush against that edge. */
+    left: 0.5rem;
     top: 50%;
     translate: 0 -50%;
-    margin-inline: 0.5rem 0;
+    margin-inline: 0;
   }
 
   .sidebar-brand-stage {
