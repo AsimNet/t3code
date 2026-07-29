@@ -79,8 +79,11 @@ function SidebarBrand({ onBackdrop }: { onBackdrop: boolean }) {
       // reverse them into "Code T3". The product name is a proper noun and
       // always reads left-to-right.
       dir="ltr"
+      // Placement lives in index.css next to the other .sidebar-brand rules: it
+      // differs per direction, and a Tailwind utility here would sit in the
+      // utilities layer and outrank those rules regardless of specificity.
       className={cn(
-        "sidebar-brand relative z-10 ml-[var(--workspace-titlebar-content-left)] h-7 w-fit min-w-0 shrink-0 items-center gap-1 overflow-hidden rounded-md outline-hidden ring-ring focus-visible:ring-2",
+        "sidebar-brand relative z-10 h-7 w-fit min-w-0 shrink-0 items-center gap-1 overflow-hidden rounded-md outline-hidden ring-ring focus-visible:ring-2",
         onBackdrop ? "text-white" : "text-foreground",
       )}
       to="/"

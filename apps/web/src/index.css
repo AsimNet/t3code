@@ -290,16 +290,25 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
 @layer components {
   .sidebar-brand {
     display: none;
+    /* Clears the sidebar toggle, which is fixed at the inline start. */
+    margin-inline-start: var(--workspace-titlebar-content-left);
   }
 
-  /* The wordmark is English in every locale, so it stays on the physical left
-     rather than leading the sidebar header. `margin-inline-start: auto` absorbs
-     the free space before it, which pushes it to the inline end — the physical
-     left — and the physical margin that reserved room for the sidebar toggle is
-     dropped, because that toggle moved to the inline start. */
+  /* The wordmark is English in every locale, so in RTL it stays on the physical
+     left instead of leading the header. Taking it out of flow is what keeps it
+     off the sidebar toggle: the toggle is fixed at the inline start — the
+     physical right here — and an in-flow brand starts in exactly that spot. An
+     auto inline-start margin would also move it left, but it would keep consuming
+     the row's free space and push anything after it (the environment pill) off
+     the far edge. Positioning it instead leaves the row to those items.
+     `top`/`translate` are explicit so the vertical placement does not depend on
+     the static position it would otherwise inherit. */
   [dir="rtl"] .sidebar-brand {
-    margin-inline-start: auto;
-    margin-left: 0;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    translate: 0 -50%;
+    margin-inline: 0.5rem 0;
   }
 
   .sidebar-brand-stage {
