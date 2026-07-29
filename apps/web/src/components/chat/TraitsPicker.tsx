@@ -505,7 +505,11 @@ export const TraitsPicker = memo(function TraitsPicker({
           </>
         )}
       </MenuTrigger>
-      <MenuPopup align="start">
+      {/* Every label in here comes from provider metadata and stays English —
+          reasoning levels, context window sizes — so the whole menu reads
+          left-to-right. Only the content is pinned; the positioner still uses
+          the app's direction, so the menu stays anchored to its trigger. */}
+      <MenuPopup align="start" dir="ltr">
         <TraitsMenuContent
           provider={provider}
           {...(instanceId ? { instanceId } : {})}

@@ -757,7 +757,10 @@ const SidebarV2Row = memo(function SidebarV2Row(props: {
                 role="button"
                 tabIndex={0}
                 data-testid="sidebar-v2-row-slim"
-                className={cn(rowSurfaceClassName, "flex h-9 items-center gap-2.5 px-2.5")}
+                className={cn(
+                  rowSurfaceClassName,
+                  "flex min-h-[calc(2.25rem*var(--font-scale))] items-center gap-2.5 px-2.5",
+                )}
                 onClick={handleClick}
                 onDoubleClick={handleDoubleClick}
                 onKeyDown={handleKeyDown}
@@ -874,8 +877,8 @@ const SidebarV2Row = memo(function SidebarV2Row(props: {
             />
           }
         >
-          <div className="relative z-10 h-[4.875rem] px-2.5 py-2">
-            <div className="flex h-5 min-w-0 items-center gap-1.5">
+          <div className="relative z-10 min-h-[calc(4.875rem*var(--font-scale))] px-2.5 py-2">
+            <div className="flex min-h-5 min-w-0 items-center gap-1.5">
               <ProjectFavicon
                 environmentId={thread.environmentId}
                 cwd={props.projectCwd ?? ""}
@@ -897,7 +900,7 @@ const SidebarV2Row = memo(function SidebarV2Row(props: {
                   actions on hover/focus or while the popover is open. Keeping
                   the hidden state out of flow lets the project label reclaim
                   space without either state overlapping it. */}
-              <span className="group/v2-status-slot relative ms-auto flex h-5 min-w-8 shrink-0 items-stretch justify-end text-xs">
+              <span className="group/v2-status-slot relative ms-auto flex min-h-5 min-w-8 shrink-0 items-stretch justify-end text-xs">
                 <span
                   className={cn(
                     "self-center justify-self-end tabular-nums text-muted-foreground/65 transition-opacity group-focus-within/v2-status-slot:absolute group-focus-within/v2-status-slot:end-0 group-hover/v2-row:absolute group-hover/v2-row:end-0 group-hover/v2-row:opacity-0",
