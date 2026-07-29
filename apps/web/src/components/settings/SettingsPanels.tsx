@@ -335,6 +335,7 @@ const PROVIDER_SETTINGS = DRIVER_OPTIONS.map((definition) => ({
 }));
 
 function ProviderLastChecked({ lastCheckedAt }: { lastCheckedAt: string | null }) {
+  const t = useT();
   useRelativeTimeTick();
   const lastCheckedRelative = getRelativeTimeState(lastCheckedAt);
 
@@ -2029,6 +2030,7 @@ export function GeneralSettingsPanel() {
 }
 
 export function ProviderSettingsPanel() {
+  const t = useT();
   const settings = usePrimarySettings();
   const updateSettings = useUpdatePrimarySettings();
   const serverProviders = useAtomValue(primaryServerProvidersAtom);
@@ -2551,6 +2553,7 @@ export function ProviderSettingsPanel() {
 }
 
 export function ArchivedThreadsPanel() {
+  const t = useT();
   const projects = useProjects();
   const { unarchiveThread, confirmAndDeleteThread } = useThreadActions();
   const environmentIds = useMemo(
