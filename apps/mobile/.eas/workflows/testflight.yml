@@ -1,0 +1,52 @@
+# Runs entirely on Expo's infrastructure: EAS Workflows orchestrates, EAS Build
+# compiles, EAS Submit uploads. Nothing here needs a GitHub runner, an
+# EXPO_TOKEN secret, or an App Store Connect key in GitHub — the ASC connection
+# configured on the Expo project is used directly.
+#
+# Run it with:  eas workflow:run .eas/workflows/testflight.yml   (from apps/mobile)
+# or from the project's Workflows page on expo.dev.
+#
+# The fork's bundle id, Apple team, Expo owner/slug and relying party must exist
+# as EAS environment variables, not repository variables — app.config.ts is
+# re-evaluated on the build worker, which never sees CI shell variables. See
+# docs/operations/fork-testflight.md.
+name: TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: EAS build profile
+        type: choice
+        options:
+          - production
+          - preview
+        default: production
+      submit:
+        description: Upload to TestFlight when the build succeeds
+        type: boolean
+        default: true
+
+concurrency:
+  # Serialise per profile: the remote build number is shared state.
+  group: testflight-${{ inputs.profile }}
+
+jobs:
+  build_ios:
+    name: Build iOS (${{ inputs.profile }})
+    type: build
+    params:
+      platform: ios
+      profile: ${{ inputs.profile }}
+      message: TestFlight ${{ inputs.profile }}
+
+  submit_ios:
+    name: Submit to TestFlight
+    needs: [build_ios]
+    if: ${{ inputs.submit }}
+    type: submit
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}
+      # Not `production`: that profile carries upstream's App Store Connect app
+      # id. `fork` points at this fork's record and leaves upstream's untouched.
+      profile: fork

@@ -56,7 +56,35 @@ repository variables below.
    in the Expo dashboard. Without this, the first build cannot create
    certificates and profiles non-interactively.
 
-### 3. GitHub configuration
+### 3. EAS environment variables (required)
+
+The identity overrides have to exist **on EAS servers**, not just in CI. Expo's
+docs are explicit: "Environment variables must be defined on EAS servers to be
+made available to EAS Build builders." `app.config.ts` is evaluated twice — once
+locally by EAS CLI to resolve the project and credentials, and again on the build
+worker during prebuild — and the worker never sees the shell environment of
+whatever triggered the build. Set them in CI only and the worker silently falls
+back to the upstream defaults, producing a `com.t3tools.t3code` build signed
+against a team you do not belong to.
+
+```bash
+cd apps/mobile
+for environment in production preview; do
+  eas env:set --name T3CODE_IOS_BUNDLE_ID   --value sa.hsb.t3code   --environment "$environment" --visibility plaintext
+  eas env:set --name T3CODE_ANDROID_PACKAGE --value sa.hsb.t3code   --environment "$environment" --visibility plaintext
+  eas env:set --name T3CODE_APPLE_TEAM_ID   --value 7GWSWUY5Y8      --environment "$environment" --visibility plaintext
+  eas env:set --name T3CODE_EXPO_OWNER      --value asimnets-team   --environment "$environment" --visibility plaintext
+  eas env:set --name T3CODE_EXPO_SLUG       --value asim            --environment "$environment" --visibility plaintext
+  eas env:set --name T3CODE_EXPO_PROJECT_ID --value 5bb0dc77-bcc4-44b7-9021-6b2d602e4a24 --environment "$environment" --visibility plaintext
+done
+eas env:list --environment production
+```
+
+The `production` and `preview` build profiles already declare
+`"environment": "production"` / `"preview"`, so those variables are picked up
+automatically.
+
+### 4. GitHub configuration (only for the GitHub Actions path)
 
 Repository **variables** (Settings → Secrets and variables → Actions →
 Variables). These are identity, not secrets:
@@ -108,7 +136,7 @@ pipeline, so one App Store Connect key can serve both repositories. If they are
 absent the workflow still runs and falls back to whatever credentials EAS has
 stored.
 
-### 4. Runtime configuration
+### 5. Runtime configuration
 
 The app needs its Clerk and relay settings as EAS environment variables for the
 chosen environment (`T3CODE_CLERK_PUBLISHABLE_KEY`, `T3CODE_CLERK_JWT_TEMPLATE`,
@@ -118,7 +146,29 @@ does not fail the build when an environment has no variables.
 
 ## Running it
 
-Actions → **Mobile TestFlight** → Run workflow.
+There are two ways to trigger the same EAS build and submission. The compiling
+always happens on EAS Build either way; the only difference is what orchestrates
+it.
+
+### EAS Workflows — Expo's infrastructure (preferred)
+
+`apps/mobile/.eas/workflows/testflight.yml`. No GitHub runner, no `EXPO_TOKEN`,
+and no App Store Connect key in GitHub: the ASC connection on the Expo project is
+used directly.
+
+```bash
+cd apps/mobile
+eas workflow:run .eas/workflows/testflight.yml
+```
+
+Or from the project's Workflows page on expo.dev. Note that `.eas/` lives beside
+`eas.json` — inside `apps/mobile`, not at the repository root.
+
+### GitHub Actions
+
+Actions → **Mobile TestFlight** → Run workflow. Requires the repository
+variables and secrets above. The workflow only appears once the file is on the
+default branch — `workflow_dispatch` is not registered from a branch.
 
 | Input     | Meaning                                                |
 | --------- | ------------------------------------------------------ |
