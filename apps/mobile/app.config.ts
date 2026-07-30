@@ -16,6 +16,37 @@ const IOS_BUNDLE_IDENTIFIER_PATTERN = /^[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/;
 
 const fromRepoRoot = (relativePath: string) => `../../${relativePath}`;
 
+/**
+ * Distribution identity overrides. A fork that ships its own TestFlight or Play
+ * builds cannot reuse the T3 Tools bundle ids, Apple team, or Expo project, so
+ * each is overridable from the environment. Every default is the upstream
+ * value, so an unconfigured checkout builds exactly as it did before.
+ */
+const APPLE_TEAM_ID = repoEnv.T3CODE_APPLE_TEAM_ID?.trim() || "ARK85ZXQ4Z";
+const IOS_RELYING_PARTY = repoEnv.T3CODE_IOS_RELYING_PARTY?.trim() || "clerk.t3.codes";
+const EXPO_OWNER = repoEnv.T3CODE_EXPO_OWNER?.trim() || "pingdotgg";
+// EAS validates the manifest slug against the slug of the project the id
+// points at, so a fork whose Expo project was created under a different name
+// has to override this too.
+const EXPO_SLUG = repoEnv.T3CODE_EXPO_SLUG?.trim() || "t3-code";
+const EXPO_PROJECT_ID =
+  repoEnv.T3CODE_EXPO_PROJECT_ID?.trim() || "d763fcb8-d37c-41ea-a773-b54a0ab4a454";
+const IOS_BUNDLE_ID_BASE = repoEnv.T3CODE_IOS_BUNDLE_ID?.trim() || "com.t3tools.t3code";
+const ANDROID_PACKAGE_BASE = repoEnv.T3CODE_ANDROID_PACKAGE?.trim() || "com.t3tools.t3code";
+
+for (const [name, value] of [
+  ["T3CODE_IOS_BUNDLE_ID", IOS_BUNDLE_ID_BASE],
+  ["T3CODE_ANDROID_PACKAGE", ANDROID_PACKAGE_BASE],
+] as const) {
+  if (!IOS_BUNDLE_IDENTIFIER_PATTERN.test(value)) {
+    throw new Error(`${name} must be a reverse-DNS identifier such as com.example.t3code.`);
+  }
+}
+
+if (!/^[A-Z0-9]{10}$/.test(APPLE_TEAM_ID)) {
+  throw new Error("T3CODE_APPLE_TEAM_ID must be a 10-character Apple Developer team id.");
+}
+
 if (
   isIosPersonalTeamBuild &&
   (!personalTeamBundleIdentifier ||
@@ -63,25 +94,25 @@ const VARIANT_CONFIG = {
   development: {
     appName: "T3 Code Dev",
     scheme: "t3code-dev",
-    iosBundleIdentifier: "com.t3tools.t3code.dev",
-    androidPackage: "com.t3tools.t3code.dev",
-    relyingParty: "clerk.t3.codes",
+    iosBundleIdentifier: `${IOS_BUNDLE_ID_BASE}.dev`,
+    androidPackage: `${ANDROID_PACKAGE_BASE}.dev`,
+    relyingParty: IOS_RELYING_PARTY,
     assets: DEVELOPMENT_ASSETS,
   },
   preview: {
     appName: "T3 Code Preview",
     scheme: "t3code-preview",
-    iosBundleIdentifier: "com.t3tools.t3code.preview",
-    androidPackage: "com.t3tools.t3code.preview",
-    relyingParty: "clerk.t3.codes",
+    iosBundleIdentifier: `${IOS_BUNDLE_ID_BASE}.preview`,
+    androidPackage: `${ANDROID_PACKAGE_BASE}.preview`,
+    relyingParty: IOS_RELYING_PARTY,
     assets: PREVIEW_ASSETS,
   },
   production: {
     appName: "T3 Code",
     scheme: "t3code",
-    iosBundleIdentifier: "com.t3tools.t3code",
-    androidPackage: "com.t3tools.t3code",
-    relyingParty: "clerk.t3.codes",
+    iosBundleIdentifier: IOS_BUNDLE_ID_BASE,
+    androidPackage: ANDROID_PACKAGE_BASE,
+    relyingParty: IOS_RELYING_PARTY,
     assets: RELEASE_ASSETS,
   },
 } as const;
@@ -158,7 +189,7 @@ const sharingPlugin: NonNullable<ExpoConfig["plugins"]>[number] = [
 
 const config: ExpoConfig = {
   name: variant.appName,
-  slug: "t3-code",
+  slug: EXPO_SLUG,
   platforms: ["ios", "android"],
   scheme: variant.scheme,
   version: "0.1.0",
@@ -182,10 +213,10 @@ const config: ExpoConfig = {
     icon: variant.assets.iosIcon,
     supportsTablet: true,
     bundleIdentifier: iosBundleIdentifier,
-    // Pin code signing to the T3 Tools team so non-interactive `expo run:ios`
+    // Pin code signing to an explicit team so non-interactive `expo run:ios`
     // does not fall back to a personal team (which cannot sign app groups,
     // Sign in with Apple, or push notification entitlements).
-    appleTeamId: "ARK85ZXQ4Z",
+    appleTeamId: APPLE_TEAM_ID,
     associatedDomains: [
       `applinks:${variant.relyingParty}`,
       `webcredentials:${variant.relyingParty}`,
@@ -345,10 +376,10 @@ const config: ExpoConfig = {
       tracesToken: repoEnv.EXPO_PUBLIC_OTLP_TRACES_TOKEN ?? null,
     },
     eas: {
-      projectId: "d763fcb8-d37c-41ea-a773-b54a0ab4a454",
+      projectId: EXPO_PROJECT_ID,
     },
   },
-  owner: "pingdotgg",
+  owner: EXPO_OWNER,
 };
 
 export default config;
