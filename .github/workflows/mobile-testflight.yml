@@ -1,0 +1,183 @@
+name: Mobile TestFlight
+
+# Fork-owned iOS distribution. Upstream's `mobile-eas-production.yml` builds
+# under the T3 Tools Apple team, Expo account, and App Store Connect record;
+# none of those are usable from a fork. This workflow drives the same EAS
+# build/submit flow with identity supplied entirely by repository variables, so
+# nothing here has to change when syncing with upstream.
+#
+# One-time setup is documented in docs/operations/fork-testflight.md.
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        required: true
+        type: choice
+        default: production
+        options:
+          - production
+          - preview
+      submit:
+        description: "Upload to TestFlight when the build succeeds"
+        required: false
+        type: boolean
+        default: true
+      wait:
+        description: "Block this job until EAS finishes (off = queue and exit)"
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  # Two concurrent production builds would race on the remote build number.
+  group: mobile-testflight-${{ inputs.profile }}
+  cancel-in-progress: false
+
+jobs:
+  ios:
+    name: iOS ${{ inputs.profile }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    env:
+      APP_VARIANT: ${{ inputs.profile }}
+      NODE_OPTIONS: --max-old-space-size=8192
+      # Fork identity. Defaults in app.config.ts point at upstream T3 Tools, so
+      # these must be set for the build to be signable by this team.
+      T3CODE_IOS_BUNDLE_ID: ${{ vars.T3CODE_IOS_BUNDLE_ID }}
+      T3CODE_ANDROID_PACKAGE: ${{ vars.T3CODE_ANDROID_PACKAGE }}
+      T3CODE_APPLE_TEAM_ID: ${{ vars.T3CODE_APPLE_TEAM_ID }}
+      T3CODE_EXPO_OWNER: ${{ vars.T3CODE_EXPO_OWNER }}
+      T3CODE_EXPO_SLUG: ${{ vars.T3CODE_EXPO_SLUG }}
+      T3CODE_EXPO_PROJECT_ID: ${{ vars.T3CODE_EXPO_PROJECT_ID }}
+      T3CODE_IOS_RELYING_PARTY: ${{ vars.T3CODE_IOS_RELYING_PARTY }}
+    steps:
+      - name: Verify required configuration
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          missing=()
+          [ -n "$EXPO_TOKEN" ] || missing+=("secret EXPO_TOKEN")
+          [ -n "$T3CODE_IOS_BUNDLE_ID" ] || missing+=("variable T3CODE_IOS_BUNDLE_ID")
+          [ -n "$T3CODE_APPLE_TEAM_ID" ] || missing+=("variable T3CODE_APPLE_TEAM_ID")
+          [ -n "$T3CODE_EXPO_OWNER" ] || missing+=("variable T3CODE_EXPO_OWNER")
+          [ -n "$T3CODE_EXPO_SLUG" ] || missing+=("variable T3CODE_EXPO_SLUG")
+          [ -n "$T3CODE_EXPO_PROJECT_ID" ] || missing+=("variable T3CODE_EXPO_PROJECT_ID")
+          if [ ${#missing[@]} -gt 0 ]; then
+            printf 'Missing required configuration:\n'
+            printf '  - %s\n' "${missing[@]}"
+            printf 'See docs/operations/fork-testflight.md\n'
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # expo-updates embeds the commit; a shallow clone yields a bogus one.
+          fetch-depth: 0
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: true
+
+      - name: Expose pnpm
+        run: |
+          pnpm_version="$(node --print "require('./package.json').packageManager.split('@').pop()")"
+          vp_pnpm_bin="$HOME/.vite-plus/package_manager/pnpm/$pnpm_version/pnpm/bin"
+          echo "$vp_pnpm_bin" >> "$GITHUB_PATH"
+          "$vp_pnpm_bin/pnpm" --version
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+          # npm, not pnpm: this only installs eas-cli into the action's own tool
+          # dir, and pnpm 11 hard-fails on dtrace-provider's ignored build
+          # script (no allowBuilds config outside the repo).
+          packager: npm
+
+      - name: Show resolved app identity
+        working-directory: apps/mobile
+        run: |
+          npx --no-install expo config --type public --json \
+            | node -e '
+                let raw = "";
+                process.stdin.on("data", (chunk) => (raw += chunk));
+                process.stdin.on("end", () => {
+                  const c = JSON.parse(raw);
+                  console.log("name        :", c.name);
+                  console.log("owner/slug  :", `${c.owner}/${c.slug}`);
+                  console.log("ios bundle  :", c.ios?.bundleIdentifier);
+                  console.log("apple team  :", c.ios?.appleTeamId);
+                  console.log("eas project :", c.extra?.eas?.projectId);
+                });
+              '
+
+      - name: Configure iOS submission
+        if: inputs.submit
+        working-directory: apps/mobile
+        env:
+          PROFILE: ${{ inputs.profile }}
+          ASC_APP_ID: ${{ vars.ASC_APP_ID }}
+          # Same App Store Connect API key shape used by the family-social
+          # pipeline, so one key can serve both repositories.
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+        run: |
+          # Written outside the workspace so the private key can never be
+          # picked up by git or an artifact upload.
+          key_path=""
+          if [ -n "$ASC_KEY_CONTENT" ] && [ -n "$ASC_KEY_ID" ] && [ -n "$ASC_ISSUER_ID" ]; then
+            key_path="$RUNNER_TEMP/asc-api-key.p8"
+            printf '%s' "$ASC_KEY_CONTENT" | base64 --decode > "$key_path"
+            chmod 600 "$key_path"
+            echo "App Store Connect API key staged for submission."
+          else
+            echo "No ASC API key secrets; EAS will fall back to its stored credentials."
+          fi
+          ASC_KEY_PATH="$key_path" node -e '
+            const fs = require("node:fs");
+            const easPath = "eas.json";
+            const eas = JSON.parse(fs.readFileSync(easPath, "utf8"));
+            const profile = process.env.PROFILE;
+            eas.submit ??= {};
+            eas.submit[profile] ??= {};
+            const ios = { ...eas.submit[profile].ios };
+            if (process.env.ASC_APP_ID) ios.ascAppId = process.env.ASC_APP_ID;
+            if (process.env.ASC_KEY_PATH) {
+              ios.ascApiKeyPath = process.env.ASC_KEY_PATH;
+              ios.ascApiKeyId = process.env.ASC_KEY_ID;
+              ios.ascApiKeyIssuerId = process.env.ASC_ISSUER_ID;
+            }
+            eas.submit[profile].ios = ios;
+            fs.writeFileSync(easPath, `${JSON.stringify(eas, null, 2)}\n`);
+            const shown = { ...ios };
+            if (shown.ascApiKeyPath) shown.ascApiKeyPath = "<staged>";
+            console.log(`submit.${profile}.ios =`, JSON.stringify(shown));
+          '
+        # eas.json has no env interpolation, so fork-specific submission config
+        # is injected at run time rather than committed. The edit is not pushed.
+
+      - name: Pull EAS environment variables
+        working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas env:pull ${{ inputs.profile }} --non-interactive || echo "no EAS env for ${{ inputs.profile }}; continuing"
+
+      - name: EAS build${{ inputs.submit && ' and submit' || '' }}
+        working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          args=(build --platform ios --profile "${{ inputs.profile }}" --non-interactive)
+          [ "${{ inputs.submit }}" = "true" ] && args+=(--auto-submit)
+          [ "${{ inputs.wait }}" = "true" ] || args+=(--no-wait)
+          echo "eas ${args[*]}"
+          eas "${args[@]}"

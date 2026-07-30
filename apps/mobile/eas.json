@@ -59,6 +59,11 @@
       "android": {
         "track": "internal"
       }
+    },
+    "fork": {
+      "ios": {
+        "ascAppId": "6796294147"
+      }
     }
   }
 }
